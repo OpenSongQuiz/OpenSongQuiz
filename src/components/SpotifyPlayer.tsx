@@ -1,5 +1,5 @@
 import { WebPlaybackSDK, usePlaybackState, useSpotifyPlayer } from "react-spotify-web-playback-sdk";
-import useSpotifyAuth from "../hooks/SpotifyAuth";
+import { useSpotifyAuth } from "../contexts/SpotifyAuth";
 
 const SongTitle: React.FC = () => {
   const playbackState = usePlaybackState();
@@ -25,14 +25,16 @@ const PauseResumeButton = () => {
 
 const SpotifyPlayer: React.FC = () => {
 
-  const { accessToken } = useSpotifyAuth();
+  const auth = useSpotifyAuth();
+  console.log("Access token in player:", auth.accessToken);
 
   return (
     <>
-      {accessToken ? (
+      <div>{auth.isAuthenticated ? "yes" : "no"}</div>
+      {auth.isAuthenticated ? (
         <WebPlaybackSDK
           initialDeviceName="OpenSongQuiz"
-          getOAuthToken={() => accessToken}
+          getOAuthToken={() => auth.accessToken}
           initialVolume={0.5}>
           <PauseResumeButton />
           <SongTitle />

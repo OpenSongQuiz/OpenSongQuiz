@@ -1,15 +1,15 @@
 // A react component that handles the spotify authentication via the Authorization Code with PKCE flow
 import React, { useState } from 'react';
-import useSpotifyAuth from "../hooks/SpotifyAuth";
+import { useSpotifyAuth } from "../contexts/SpotifyAuth";
 
 interface SongInformation {
     artist: string,
     title: string,
     year: number,
-} 
+}
 
 const SpotifyPlaylist: React.FC = () => {
-    const { accessToken } = useSpotifyAuth();
+    const auth = useSpotifyAuth();
     const [tracks, setTracks] = useState([]);
     const [tracksLoading, setTracksLoading] = useState(false); // Todo: remove when fixed
 
@@ -25,7 +25,7 @@ const SpotifyPlaylist: React.FC = () => {
                 "title": track.name,
                 "year": track.album.release_date,
             } as SongInformation
-        } 
+        }
         else {
             return  {} as SongInformation
         }
@@ -35,7 +35,7 @@ const SpotifyPlaylist: React.FC = () => {
         (async () => {
                 const response = await fetch(playlistApiEndpoint + "/" + playlistId, {
                     method: 'GET',
-                    headers: { 'Authorization': 'Bearer ' + accessToken },
+                    headers: { 'Authorization': 'Bearer ' + auth.accessToken },
                 })
                 const json_response = await response.json();
                 setTracks(json_response.tracks.items);
