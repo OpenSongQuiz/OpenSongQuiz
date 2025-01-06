@@ -16,31 +16,19 @@ const SpotifyAuth: React.FC = () => {
   const scope = 'user-read-private user-read-email user-read-currently-playing streaming';
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if (code && codeVerifier) {
+      getToken(code, codeVerifier);
 
-    (async function () {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get('code');
-      if (code && codeVerifier) {
-        const { access_token, refresh_token, expires_in } = await getToken(code, codeVerifier);
+      // Remove code from URL so we can refresh correctly.
+      const url = new URL(window.location.href);
+      url.searchParams.delete("code");
 
-        // Save tokens
-        setAccessToken(access_token);
-        setRefreshToken(refresh_token);
-        setExpiresIn(expires_in.toString());
-
-        const now = new Date();
-        const expiry = new Date(now.getTime() + (expires_in * 1000));
-        setExpires(expiry.toString());
-
-        // Remove code from URL so we can refresh correctly.
-        const url = new URL(window.location.href);
-        url.searchParams.delete("code");
-
-        const updatedUrl = url.search ? url.href : url.href.replace('?', '');
-        window.history.replaceState({}, document.title, updatedUrl);
-      }
-    })();
-  }, []);
+      const updatedUrl = url.search ? url.href : url.href.replace('?', '');
+      window.history.replaceState({}, document.title, updatedUrl);
+    };
+  });
 
   const getToken = async (code: string, codeVerifier: string) => {
     const response = await fetch(tokenEndpoint, {
@@ -57,7 +45,17 @@ const SpotifyAuth: React.FC = () => {
       })
     });
 
-    return await response.json();
+    const { access_token, refresh_token, expires_in } = await response.json();
+
+    // Save tokens
+    setAccessToken(access_token);
+    console.log("accesstoken set");
+    setRefreshToken(refresh_token);
+    setExpiresIn(expires_in.toString());
+
+    const now = new Date();
+    const expiry = new Date(now.getTime() + (expires_in * 1000));
+    setExpires(expiry.toString());
   };
 
   const handleLogin = async () => {
