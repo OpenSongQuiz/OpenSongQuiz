@@ -4,6 +4,7 @@ import SpotifyPlaylist from './components/SpotifyPlaylist'
 import SpotifyAuth from './components/SpotifyAuth'
 import { SpotifyProvider } from './contexts/Spotify'
 import { useState } from 'react'
+import SpotifySdkDemo from './components/SpotifySdkDemo'
 
 function App() {
   const [osqId, setOsqId] = useState<number>(Math.floor(Math.random() * 301))
@@ -13,6 +14,7 @@ function App() {
       <SpotifyAuth />
       <SpotifyPlayer />
       <SpotifyPlaylist osqId={osqId} />
+      <SpotifySdkDemo />
     </SpotifyProvider>
   )
 }

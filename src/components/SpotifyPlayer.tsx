@@ -4,7 +4,7 @@ import { useSpotify } from "../contexts/Spotify";
 const SongTitle: React.FC = () => {
   const playbackState = usePlaybackState();
 
-  if (playbackState === null) return ;
+  if (playbackState === null) return;
 
 
   return <p>Current song: {playbackState.track_window.current_track.name}</p>;
@@ -55,18 +55,18 @@ const SpotifyPlayer: React.FC = () => {
   if (!spotify?.api) { return null };
 
   const tokenProvider = async (callback: any) => {
-    const token = await spotify.api.getAccessToken();
+    const token = await spotify.api?.getAccessToken();
     callback(token?.access_token);
   };
 
   return (
-        <WebPlaybackSDK
-          initialDeviceName="OpenSongQuiz"
-          getOAuthToken={tokenProvider}
-          initialVolume={0.5}>
-          <MyPlayer />
-          <ErrorState />
-        </WebPlaybackSDK>
+    <WebPlaybackSDK
+      initialDeviceName="OpenSongQuiz"
+      getOAuthToken={tokenProvider}
+      initialVolume={0.5}>
+      <MyPlayer />
+      <ErrorState />
+    </WebPlaybackSDK>
 
   );
 };
