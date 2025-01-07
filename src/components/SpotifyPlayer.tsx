@@ -51,8 +51,11 @@ const MyPlayer = () => {
 
 const SpotifyPlayer: React.FC = () => {
   const spotify = useSpotify();
+
+  if (!spotify?.api) { return null };
+
   const tokenProvider = async (callback: any) => {
-    const token = await spotify?.api?.getAccessToken();
+    const token = await spotify.api.getAccessToken();
     callback(token?.access_token);
   };
 

@@ -8,19 +8,22 @@ interface SpotifyPlaylistComponent {
 
 const SpotifyPlaylist: React.FC<SpotifyPlaylistComponent> = ({osqId}) => {
     const [song, setSong] = useState<Track | undefined>();
-    
-    const spotifyApi = useSpotify().api
+
+    const spotify = useSpotify()
+
     const playlistId = "26zIHVncgI9HmHlgYWwnDi"    
 
     useEffect(() => {
-        if (!song && spotifyApi) {
+        if (!song && spotify?.api) {
             (async () => {
-                const result = await spotifyApi.playlists.getPlaylistItems(playlistId, undefined, undefined, 1,  osqId - 1)
+                const result = await spotify.api.playlists.getPlaylistItems(playlistId, undefined, undefined, 1,  osqId - 1)
                 setSong(() => result.items[0].track);        
             })();
         }
-      }, [playlistId, song, osqId, spotifyApi]);
+      }, [playlistId, song, osqId, spotify]);
 
+    if (!spotify.api) return null;
+    
     return (
         <div>
             <p>Artist: { song?.artists[0].name }</p>

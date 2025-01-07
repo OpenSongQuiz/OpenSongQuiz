@@ -16,7 +16,7 @@ type SpotifyProviderProps = {
 export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) => {
   const clientId = '7760f245f5344b5b8f5735c4daf148c0';
   const redirectUri = 'http://localhost:8080';
-  const scopes = [...Scopes.playlist, ...Scopes.userPlayback]
+  const scopes = [...Scopes.playlist, ...Scopes.userPlayback, ...Scopes.userDetails]
 
   const [sdk, setSdk] = useState<SpotifyApi | undefined>(undefined);
 
