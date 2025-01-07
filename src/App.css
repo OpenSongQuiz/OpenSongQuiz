@@ -5,6 +5,18 @@
   text-align: center;
 }
 
+
+svg.icon {
+  width: 1em;
+  height: 1em;
+}
+
+button.login-spotify {
+  background: #1ED760;
+  color: black;
+  border-color: black;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
