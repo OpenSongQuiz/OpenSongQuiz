@@ -1,23 +1,22 @@
 // A react component that handles the spotify authentication via the Authorization Code with PKCE flow
 import React from 'react';
-import { SpotifyComponent } from '../types';
+import { useSpotify } from '../contexts/Spotify';
 
 // TODO: Implement refresh
 
-const SpotifyAuth: React.FC<SpotifyComponent> = ({spotify}) => {
+const SpotifyAuth: React.FC = () => {
 
-  const spotifyLogoutClick = () => {
-    spotify?.logOut()
-    spotify?.authenticate()
-  }
+  const spotify = useSpotify();
 
   return (
     <div>
-      {!spotify ? (
-        <div/>
+      {!spotify.api ? (
+        <>
+          <button onClick={spotify.login}>Login</button>
+        </>
       ) : (
         <>
-          <button onClick={spotifyLogoutClick}>Logout</button>
+          <button onClick={spotify.logout}>Logout</button>
         </>
       )}
     </div>

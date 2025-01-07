@@ -1,6 +1,6 @@
 import { WebPlaybackSDK, useErrorState, usePlaybackState, useSpotifyPlayer } from "react-spotify-web-playback-sdk";
-import { SpotifyComponent } from "../types";
 import { useCallback } from "react";
+import { useSpotify } from "../contexts/Spotify";
 
 const SongTitle: React.FC = () => {
   const playbackState = usePlaybackState();
@@ -33,9 +33,10 @@ const PauseResumeButton = () => {
   );
 };
 
-const SpotifyPlayer: React.FC<SpotifyComponent> = ({spotify}) => {
-  const token = spotify?.getAccessToken()
-  
+const SpotifyPlayer: React.FC = () => {
+  const spotify = useSpotify();
+  const token = spotify.api?.getAccessToken()
+
   const getOAuthToken = useCallback(callback => {
     if (token) {
       callback(token)
@@ -52,7 +53,7 @@ const SpotifyPlayer: React.FC<SpotifyComponent> = ({spotify}) => {
           <SongTitle />
           <ErrorState />
         </WebPlaybackSDK>
-      
+
   );
 };
 

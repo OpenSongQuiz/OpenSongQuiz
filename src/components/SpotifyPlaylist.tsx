@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { Track } from '@spotify/web-api-ts-sdk';
-import { SpotifyComponent } from '../types';
+import { useSpotify } from '../contexts/Spotify';
 
-const SpotifyPlaylist: React.FC<SpotifyComponent> = ({spotify}) => {
+const SpotifyPlaylist: React.FC = () => {
     const [song, setSong] = useState<Track | undefined>();
     const [songId, setSongId] = useState<number>(102)
 
     const playlistId = "26zIHVncgI9HmHlgYWwnDi"
 
-    
+    const spotify = useSpotify();
 
     useEffect(() => {
-        if (!song && spotify) {
+        if (!song && spotify.api) {
             (async () => {
-                const result = await spotify.playlists.getPlaylistItems(playlistId, undefined, undefined, 1,  songId - 1)
-                setSong(() => result.items[0].track);        
+                console.log("Spotify is ", spotify.api)
+                const result = await spotify.api?.playlists.getPlaylistItems(playlistId, undefined, undefined, 1,  songId - 1)
+                setSong(() => result.items[0].track);
             })();
         }
       }, [playlistId, song, songId, spotify]);
