@@ -1,5 +1,4 @@
-import { WebPlaybackSDK, useErrorState, usePlaybackState, useSpotifyPlayer } from "react-spotify-web-playback-sdk";
-import { useCallback } from "react";
+import { WebPlaybackSDK, useErrorState, usePlaybackState, useSpotifyPlayer, usePlayerDevice, useWebPlaybackSDKReady } from "react-spotify-web-playback-sdk";
 import { useSpotify } from "../contexts/Spotify";
 
 const SongTitle: React.FC = () => {
@@ -19,38 +18,50 @@ const ErrorState = () => {
   return <p>Error: {errorState.message}</p>;
 };
 
+export const PlayerHeader: React.FC = () => {
+  const playerDevice = usePlayerDevice();
+
+  return (<h1>{playerDevice?.device_id}</h1>);
+};
+
 const PauseResumeButton = () => {
   const player = useSpotifyPlayer();
-  (async () => {const state = await player?.getCurrentState(); console.log(state)})();
 
   if (player === null) return null;
 
   return (
     <div>
-      <button onClick={() => player.pause()}>pause</button>
-      <button onClick={() => player.resume()}>resume</button>
+      <button onClick={() => player.togglePlay()}>Play/Pause</button>
+      <button onClick={() => player.activateElement()}>Activate</button>
+      {}
     </div>
   );
 };
 
+const MyPlayer = () => {
+  const webPlaybackSDKReady = useWebPlaybackSDKReady();
+
+  if (!webPlaybackSDKReady) return <div>Loading...</div>;
+
+  return <div>
+            <PauseResumeButton />
+            <SongTitle />
+          </div>;
+};
+
 const SpotifyPlayer: React.FC = () => {
   const spotify = useSpotify();
-  const token = spotify.api?.getAccessToken()
-
-  const getOAuthToken = useCallback(callback => {
-    if (token) {
-      callback(token)
-    }
-  }, []);
+  const tokenProvider = async (callback: any) => {
+    const token = await spotify?.api?.getAccessToken();
+    callback(token?.access_token);
+  };
 
   return (
         <WebPlaybackSDK
           initialDeviceName="OpenSongQuiz"
-          getOAuthToken={getOAuthToken}
-          initialVolume={0.5}
-          connectOnInitialized={true}>
-          <PauseResumeButton />
-          <SongTitle />
+          getOAuthToken={tokenProvider}
+          initialVolume={0.5}>
+          <MyPlayer />
           <ErrorState />
         </WebPlaybackSDK>
 
