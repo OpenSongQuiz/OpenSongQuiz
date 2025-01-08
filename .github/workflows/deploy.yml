@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Build
-        run: npm run build-prod
+        run: npm run build
       - name: Upload static files as artifact
         id: deployment
         uses: actions/upload-pages-artifact@v3
