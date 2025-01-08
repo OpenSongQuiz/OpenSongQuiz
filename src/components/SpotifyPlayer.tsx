@@ -1,14 +1,6 @@
-import { WebPlaybackSDK, useErrorState, usePlaybackState, useSpotifyPlayer, usePlayerDevice, useWebPlaybackSDKReady } from "react-spotify-web-playback-sdk";
+import { WebPlaybackSDK, useErrorState, useSpotifyPlayer, usePlayerDevice, useWebPlaybackSDKReady } from "react-spotify-web-playback-sdk";
 import { useSpotify } from "../contexts/Spotify";
-
-const SongTitle: React.FC = () => {
-  const playbackState = usePlaybackState();
-
-  if (playbackState === null) return;
-
-
-  return <p>Current song: {playbackState.track_window.current_track.name}</p>;
-};
+import SpotifyPlaylist from "./SpotifyPlaylist";
 
 const ErrorState = () => {
   const errorState = useErrorState();
@@ -45,11 +37,11 @@ const MyPlayer = () => {
 
   return <div>
             <PauseResumeButton />
-            <SongTitle />
           </div>;
 };
 
-const SpotifyPlayer: React.FC = () => {
+
+const SpotifyPlayer: React.FC = () => {  
   const spotify = useSpotify();
 
   if (!spotify?.api) { return null };
@@ -66,8 +58,8 @@ const SpotifyPlayer: React.FC = () => {
       initialVolume={0.5}>
       <MyPlayer />
       <ErrorState />
+      <SpotifyPlaylist />
     </WebPlaybackSDK>
-
   );
 };
 

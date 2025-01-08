@@ -11,6 +11,14 @@ svg.icon {
   height: 1em;
 }
 
+.hidden {
+  display: none;
+}
+
+#song-info-container {
+  height: 200px;
+}
+
 button.login-spotify {
   background: #1ED760;
   color: black;
