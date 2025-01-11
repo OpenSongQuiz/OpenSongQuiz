@@ -18,6 +18,7 @@ const SpotifyPlaylist: React.FC = () => {
   const [song, setSong] = useState<Track | undefined>();
   const [buttonState, setButtonState] = useState<number>(0);
   const [stopOnReveal, setStopOnReveal] = useState<boolean>(true);
+  const [repeatSong, setRepeatSong] = useState<boolean | undefined>(undefined);
   const [playbackError, setplaybackError] = useState<string>("");
   const [playback, setPlayback] = useState<Playback | null>();
 
@@ -46,6 +47,35 @@ const SpotifyPlaylist: React.FC = () => {
   useEffect(() => {
     setAvailableDevicesAsync();
   }, [setAvailableDevicesAsync, spotify.api]);
+
+
+  useEffect(() => {
+    (async () => {
+      if (!spotify.api) {
+        setRepeatSong(undefined);
+        return
+      }
+
+      if (repeatSong === undefined) {
+        // On first run, init repeat song value
+        if (playback?.selected) {
+          const state = await spotify.api.player.getPlaybackState();
+          setRepeatSong(state.repeat_state === "track");
+        } else {
+          console.error("Could not determine repeat song state");
+          setRepeatSong(false);
+        }
+        return;
+      }
+
+      if (repeatSong) {
+        spotify.api.player.setRepeatMode("track");
+      } else {
+        spotify.api.player.setRepeatMode("off");
+      }
+    })();
+  }, [spotify.api, repeatSong]);
+
 
   if (!spotify.api) return null;
 
@@ -88,29 +118,24 @@ const SpotifyPlaylist: React.FC = () => {
     setAvailableDevicesAsync();
     if (buttonState !== ButtonStateEnum.RevealSong) {
       playNextSong(undefined);
-    } else {
-      if (spotify?.api) {
-        if (stopOnReveal && playback?.selected) spotify.api.player.pausePlayback(playback?.selected);
-        setButtonState(ButtonStateEnum.PlaySong);
-      }
+      return;
+    }
+
+    if (spotify?.api) {
+      if (stopOnReveal && playback?.selected) spotify.api.player.pausePlayback(playback?.selected);
+      setButtonState(ButtonStateEnum.PlaySong);
     }
   };
 
-  const pauseClick = () => {
-    (async () => {
-      if (spotify?.api && playback?.selected) {
-        const state = await spotify.api.player.getPlaybackState();
-        if (state.is_playing) {
-          spotify.api.player.pausePlayback(playback.selected);
-        } else {
-          spotify.api.player.startResumePlayback(playback.selected);
-        }
+  const pauseClick = async () => {
+    if (spotify?.api && playback?.selected) {
+      const state = await spotify.api.player.getPlaybackState();
+      if (state.is_playing) {
+        spotify.api.player.pausePlayback(playback.selected);
+      } else {
+        spotify.api.player.startResumePlayback(playback.selected);
       }
-    })();
-  };
-
-  const stopOnRevealClick = () => {
-    setStopOnReveal(!stopOnReveal);
+    }
   };
 
   const title = song?.name;
@@ -136,8 +161,12 @@ const SpotifyPlaylist: React.FC = () => {
         ))}
       </select>
       <label>
-        <input className="mx-1" type="checkbox" checked={stopOnReveal} onChange={stopOnRevealClick} />
+        <input className="mx-1" type="checkbox" checked={stopOnReveal} onChange={() => setStopOnReveal(!stopOnReveal)} />
         Stop playback on reveal
+      </label>
+      <label>
+        <input className="mx-1" type="checkbox" disabled={repeatSong === undefined} checked={repeatSong} onChange={() => setRepeatSong(!repeatSong)} />
+        Repeat song {repeatSong === undefined && "(initialising ...)"}
       </label>
       <br />
       <div className="bg-[#2a2a2a] rounded-3xl size-80 my-2">
