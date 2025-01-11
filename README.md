@@ -1,4 +1,3 @@
-
 <img src="Logo.png" data-canonical-src="Logo.png" style="width: 200px; margin: auto;">
 
 # Open Song Quiz

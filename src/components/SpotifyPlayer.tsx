@@ -1,6 +1,11 @@
-import { WebPlaybackSDK, useErrorState, useSpotifyPlayer, usePlayerDevice, useWebPlaybackSDKReady } from "react-spotify-web-playback-sdk";
+import {
+  WebPlaybackSDK,
+  useErrorState,
+  useSpotifyPlayer,
+  usePlayerDevice,
+  useWebPlaybackSDKReady,
+} from "react-spotify-web-playback-sdk";
 import { useSpotify } from "../contexts/Spotify";
-import SpotifyPlaylist from "./SpotifyPlaylist";
 
 const ErrorState = () => {
   const errorState = useErrorState();
@@ -13,27 +18,30 @@ const ErrorState = () => {
 export const PlayerHeader: React.FC = () => {
   const playerDevice = usePlayerDevice();
 
-  return (<h1>{playerDevice?.device_id}</h1>);
+  return <h1>{playerDevice?.device_id}</h1>;
 };
 
 const PauseResumeButton = () => {
   const player = useSpotifyPlayer();
 
   const activateButtonClick = () => {
-      player?.activateElement();
-      player?.connect().then(() => {
-        console.log("connected")
-      })
-  }
+    player?.activateElement();
+    player?.connect().then(() => {
+      console.log("connected");
+    });
+  };
 
   return (
     <div>
-      { player ? (
+      {player ? (
         <>
-        <button onClick={() => player?.togglePlay()}>Play/Pause</button>
-        <button onClick={activateButtonClick}>Activate</button>
-        </>) : (<></>)}
-      
+          <button onClick={() => player?.togglePlay()}>Play/Pause</button>
+          <button onClick={activateButtonClick}>Activate</button>
+        </>
+      ) : (
+        <></>
+      )}
+
       {}
     </div>
   );
@@ -44,16 +52,19 @@ const MyPlayer = () => {
 
   if (!webPlaybackSDKReady) return <div>Loading...</div>;
 
-  return <div>
-            <PauseResumeButton />
-          </div>;
+  return (
+    <div>
+      <PauseResumeButton />
+    </div>
+  );
 };
 
-
-const SpotifyPlayer: React.FC = () => {  
+const SpotifyPlayer: React.FC = () => {
   const spotify = useSpotify();
 
-  if (!spotify?.api) { return null };
+  if (!spotify?.api) {
+    return null;
+  }
 
   const tokenProvider = async (callback: any) => {
     const token = await spotify.api?.getAccessToken();
@@ -64,8 +75,9 @@ const SpotifyPlayer: React.FC = () => {
     <WebPlaybackSDK
       initialDeviceName="OpenSongQuiz"
       getOAuthToken={tokenProvider}
-      initialVolume={0.5}>
-      <div className='w-5/6 justify-center'>
+      initialVolume={0.5}
+    >
+      <div className="w-5/6 justify-center">
         <MyPlayer />
         <ErrorState />
       </div>
