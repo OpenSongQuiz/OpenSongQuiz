@@ -72,11 +72,7 @@ const SpotifyPlayer: React.FC = () => {
   };
 
   return (
-    <WebPlaybackSDK
-      initialDeviceName="OpenSongQuiz"
-      getOAuthToken={tokenProvider}
-      initialVolume={0.5}
-    >
+    <WebPlaybackSDK initialDeviceName="OpenSongQuiz" getOAuthToken={tokenProvider} initialVolume={0.5}>
       <div className="w-5/6 justify-center">
         <MyPlayer />
         <ErrorState />

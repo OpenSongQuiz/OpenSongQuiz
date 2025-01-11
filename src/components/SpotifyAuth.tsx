@@ -11,10 +11,7 @@ const SpotifyAuth: React.FC = () => {
   return (
     <div>
       {!spotify.api ? (
-        <button
-          className="bg-spotifygreen text-black border-black"
-          onClick={spotify.login}
-        >
+        <button className="bg-spotifygreen text-black border-black" onClick={spotify.login}>
           <SpotifyLogo />
           Login with Spotify
         </button>

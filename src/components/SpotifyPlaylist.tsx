@@ -30,9 +30,7 @@ const SpotifyPlaylist: React.FC = () => {
     const devices = await spotify.api?.player.getAvailableDevices();
     playback.devices = devices?.devices;
     const selected = playback.devices
-      ? playback.devices[
-          playback.devices.findIndex((device) => device.is_active === true)
-        ]?.id
+      ? playback.devices[playback.devices.findIndex((device) => device.is_active === true)]?.id
       : null;
     playback.selected = selected ? selected : "";
     setPlayback(playback);
@@ -59,9 +57,7 @@ const SpotifyPlaylist: React.FC = () => {
         return;
       }
       setButtonState(ButtonStateEnum.RevealSong);
-      nextOsqId = nextOsqId
-        ? nextOsqId
-        : Math.floor(Math.random() * (playlist?.tracks.total + 1));
+      nextOsqId = nextOsqId ? nextOsqId : Math.floor(Math.random() * (playlist?.tracks.total + 1));
       const playlistItems = await spotify.api?.playlists.getPlaylistItems(
         playlistId,
         undefined,
@@ -72,19 +68,12 @@ const SpotifyPlaylist: React.FC = () => {
       const nextSong = playlistItems?.items[0].track;
       setSong(() => nextSong);
       if (nextSong) {
-        const availableDevices = (
-          await spotify.api?.player.getAvailableDevices()
-        )?.devices;
-        const device = availableDevices?.filter(
-          (session) => session.is_active === true,
-        );
+        const availableDevices = (await spotify.api?.player.getAvailableDevices())?.devices;
+        const device = availableDevices?.filter((session) => session.is_active === true);
         if (device && device.length > 0 && device[0].id) {
-          await spotify.api?.player.startResumePlayback(
-            device[0].id,
-            "spotify:playlist:" + playlistId,
-            undefined,
-            { uri: nextSong.uri },
-          );
+          await spotify.api?.player.startResumePlayback(device[0].id, "spotify:playlist:" + playlistId, undefined, {
+            uri: nextSong.uri,
+          });
         } else {
           setplaybackError("Spotify player not yet ready");
           setButtonState(ButtonStateEnum.ErrorTryAgain);
@@ -101,8 +90,7 @@ const SpotifyPlaylist: React.FC = () => {
       playNextSong(undefined);
     } else {
       if (spotify?.api) {
-        if (playback?.selected)
-          spotify.api.player.pausePlayback(playback?.selected);
+        if (playback?.selected) spotify.api.player.pausePlayback(playback?.selected);
         setButtonState(ButtonStateEnum.PlaySong);
       }
     }
@@ -148,23 +136,14 @@ const SpotifyPlaylist: React.FC = () => {
         ))}
       </select>
       <label>
-        <input
-          className="mx-1"
-          type="checkbox"
-          checked={checkboxState}
-          onChange={checkboxClick}
-        />
+        <input className="mx-1" type="checkbox" checked={checkboxState} onChange={checkboxClick} />
         Stop playback on reveal
       </label>
       <br />
       <div className="bg-[#2a2a2a] rounded-3xl size-80 my-2">
         <div
           id="song-info"
-          className={
-            "grid " +
-            (buttonState < 3 ? "hidden" : "") +
-            " size-full text-center place-items-center"
-          }
+          className={"grid " + (buttonState < 3 ? "hidden" : "") + " size-full text-center place-items-center"}
         >
           <p className="text-xl">{title}</p>
           <p className="text-3xl">{year}</p>

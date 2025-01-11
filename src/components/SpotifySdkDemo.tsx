@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSpotify } from "../contexts/Spotify";
-import {
-  Device,
-  Devices,
-  PlaybackState,
-  Track,
-  UserProfile,
-} from "@spotify/web-api-ts-sdk";
+import { Device, Devices, PlaybackState, Track, UserProfile } from "@spotify/web-api-ts-sdk";
 
 // TODO: Add button wich loads random song from playlist and starts playing
 
@@ -18,8 +12,7 @@ const SpotifySdkDemo: React.FC = () => {
   const [track, setTrack] = useState<PlaybackState | null>(null);
   const [counter, setCounter] = useState<number>(0);
 
-  const fetchProfile = async () =>
-    setProfile(await spotify.api!.currentUser.profile());
+  const fetchProfile = async () => setProfile(await spotify.api!.currentUser.profile());
   const fetchDevices = async () => {
     const devices = await spotify.api!.player.getAvailableDevices();
     devices.devices.forEach((d) => {
@@ -27,8 +20,7 @@ const SpotifySdkDemo: React.FC = () => {
     });
     setDevices(devices);
   };
-  const fetchTrack = async () =>
-    setTrack(await spotify.api!.player.getCurrentlyPlayingTrack());
+  const fetchTrack = async () => setTrack(await spotify.api!.player.getCurrentlyPlayingTrack());
   const pause = () => {
     const id = activeDevice?.id;
     if (!id) return;
@@ -84,21 +76,11 @@ const SpotifySdkDemo: React.FC = () => {
     <div>
       <h2>SpotifySdkDemo</h2>
       <p>Profile: {profile?.display_name}</p>
+      <p>Devices: {devices?.devices.flatMap((el) => (el.is_active ? <b>{el.name},</b> : el.name + ", "))}</p>
       <p>
-        Devices:{" "}
-        {devices?.devices.flatMap((el) =>
-          el.is_active ? <b>{el.name},</b> : el.name + ", ",
-        )}
+        Track: {artist()} - {track?.item.name} ({track?.is_playing ? "playing" : "stopped"})
       </p>
-      <p>
-        Track: {artist()} - {track?.item.name} (
-        {track?.is_playing ? "playing" : "stopped"})
-      </p>
-      {track?.is_playing ? (
-        <button onClick={pause}>Pause</button>
-      ) : (
-        <button onClick={play}>Resume</button>
-      )}
+      {track?.is_playing ? <button onClick={pause}>Pause</button> : <button onClick={play}>Resume</button>}
       <button onClick={refreshClick}>Refresh </button>
     </div>
   );
