@@ -36,10 +36,10 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
     const auth = new AuthorizationCodeWithPKCEStrategy(clientId, redirectUri, scopes);
     const internalSdk = new SpotifyApi(auth);
     if (await internalSdk.getAccessToken()) {
-      console.log("SpotifyContext: AccessToken available")
+      console.debug("SpotifyContext: AccessToken available")
       setSdk(internalSdk);
     } else {
-      console.log("SpotifyContext: No AccessToken available")
+      console.warn("SpotifyContext: No AccessToken available")
     }
   }
 

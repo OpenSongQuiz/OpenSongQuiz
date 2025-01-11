@@ -19,12 +19,21 @@ export const PlayerHeader: React.FC = () => {
 const PauseResumeButton = () => {
   const player = useSpotifyPlayer();
 
-  if (player === null) return null;
+  const activateButtonClick = () => {
+      player?.activateElement();
+      player?.connect().then(() => {
+        console.log("connected")
+      })
+  }
 
   return (
     <div>
-      <button onClick={() => player.togglePlay()}>Play/Pause</button>
-      <button onClick={() => player.activateElement()}>Activate</button>
+      { player ? (
+        <>
+        <button onClick={() => player?.togglePlay()}>Play/Pause</button>
+        <button onClick={activateButtonClick}>Activate</button>
+        </>) : (<></>)}
+      
       {}
     </div>
   );
@@ -56,9 +65,10 @@ const SpotifyPlayer: React.FC = () => {
       initialDeviceName="OpenSongQuiz"
       getOAuthToken={tokenProvider}
       initialVolume={0.5}>
-      <MyPlayer />
-      <ErrorState />
-      <SpotifyPlaylist />
+      <div className='w-5/6 justify-center'>
+        <MyPlayer />
+        <ErrorState />
+      </div>
     </WebPlaybackSDK>
   );
 };

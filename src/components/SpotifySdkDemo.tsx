@@ -11,6 +11,7 @@ const SpotifySdkDemo: React.FC = () => {
   const [devices, setDevices] = useState<Devices | null>(null)
   const [activeDevice, setActiveDevice] = useState<Device | null>(null)
   const [track, setTrack] = useState<PlaybackState | null>(null)
+  const [counter, setCounter] = useState<number>(0);
 
   const fetchProfile = async () => setProfile(await spotify.api!.currentUser.profile());
   const fetchDevices = async () => {
@@ -62,6 +63,14 @@ const SpotifySdkDemo: React.FC = () => {
     fetchTrack();
   }, [spotify]);
 
+  const refreshClick = () => {
+    setCounter(() => (counter + 1) );
+    if (!spotify.api) return;
+    fetchProfile();
+    fetchDevices();
+    fetchTrack();
+  }
+
   if (!spotify.api) return null;
 
   return (
@@ -71,6 +80,7 @@ const SpotifySdkDemo: React.FC = () => {
       <p>Devices: {devices?.devices.flatMap(el => el.is_active ? <b>{el.name},</b> : el.name + ", ")}</p>
       <p>Track: {artist()} - {track?.item.name} ({track?.is_playing ? "playing" : "stopped" })</p>
       { track?.is_playing ? <button onClick={pause}>Pause</button> : <button onClick={play}>Resume</button> }
+      <button onClick={refreshClick}>Refresh </button>
     </div>
   );
 };
