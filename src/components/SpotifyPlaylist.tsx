@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Device, Track } from "@spotify/web-api-ts-sdk";
 import { useSpotify } from "../contexts/Spotify";
+import { useSettings } from "../contexts/Settings";
+import PlaybackSetting from "./PlaybackSetting";
+import SongInfo from "./SongInfo";
 
 enum ButtonStateEnum {
   Start = 0,
@@ -17,12 +20,11 @@ interface Playback {
 const SpotifyPlaylist: React.FC = () => {
   const [song, setSong] = useState<Track | undefined>();
   const [buttonState, setButtonState] = useState<number>(0);
-  const [stopOnReveal, setStopOnReveal] = useState<boolean>(true);
-  const [repeatSong, setRepeatSong] = useState<boolean | undefined>(undefined);
   const [playbackError, setplaybackError] = useState<string>("");
   const [playback, setPlayback] = useState<Playback | null>();
 
   const spotify = useSpotify();
+  const settings = useSettings();
 
   const playlistId = "26zIHVncgI9HmHlgYWwnDi";
 
@@ -51,29 +53,29 @@ const SpotifyPlaylist: React.FC = () => {
   useEffect(() => {
     (async () => {
       if (!spotify.api) {
-        setRepeatSong(undefined);
+        settings.playback.setRepeatSong(undefined);
         return;
       }
 
-      if (repeatSong === undefined) {
+      if (settings.playback.repeatSong === undefined) {
         // On first run, init repeat song value
         if (playback?.selected) {
           const state = await spotify.api.player.getPlaybackState();
-          setRepeatSong(state.repeat_state === "track");
+          settings.playback.setRepeatSong(state.repeat_state === "track");
         } else {
           console.error("Could not determine repeat song state");
-          setRepeatSong(false);
+          settings.playback.setRepeatSong(false);
         }
         return;
       }
 
-      if (repeatSong) {
+      if (settings.playback.repeatSong) {
         spotify.api.player.setRepeatMode("track");
       } else {
         spotify.api.player.setRepeatMode("off");
       }
     })();
-  }, [spotify.api, repeatSong]);
+  }, [spotify.api, settings, playback]);
 
   if (!spotify.api) return null;
 
@@ -120,7 +122,7 @@ const SpotifyPlaylist: React.FC = () => {
     }
 
     if (spotify?.api) {
-      if (stopOnReveal && playback?.selected) spotify.api.player.pausePlayback(playback?.selected);
+      if (settings.playback.stopOnReveal && playback?.selected) spotify.api.player.pausePlayback(playback?.selected);
       setButtonState(ButtonStateEnum.PlaySong);
     }
   };
@@ -158,36 +160,22 @@ const SpotifyPlaylist: React.FC = () => {
           </option>
         ))}
       </select>
-      <label>
-        <input
-          className="mx-1"
-          type="checkbox"
-          checked={stopOnReveal}
-          onChange={() => setStopOnReveal(!stopOnReveal)}
-        />
-        Stop playback on reveal
-      </label>
-      <label>
-        <input
-          className="mx-1"
-          type="checkbox"
-          disabled={repeatSong === undefined}
-          checked={repeatSong}
-          onChange={() => setRepeatSong(!repeatSong)}
-        />
-        Repeat song {repeatSong === undefined && "(initialising ...)"}
-      </label>
+      <PlaybackSetting
+        label={"Stop playback on reveal"}
+        getPlaybackSetting={() => {
+          return settings.playback.stopOnReveal;
+        }}
+        setPlaybackSetting={settings.playback.setStopOnReveal}
+      />
+      <PlaybackSetting
+        label={"Repeat song"}
+        getPlaybackSetting={() => {
+          return settings.playback.repeatSong;
+        }}
+        setPlaybackSetting={settings.playback.setRepeatSong}
+      />
       <br />
-      <div className="bg-[#2a2a2a] rounded-3xl size-80 my-2">
-        <div
-          id="song-info"
-          className={"grid " + (buttonState < 3 ? "hidden" : "") + " size-full text-center place-items-center"}
-        >
-          <p className="text-xl">{title}</p>
-          <p className="text-3xl">{year}</p>
-          <p className="text-xl">{artist}</p>
-        </div>
-      </div>
+      <SongInfo hidden={buttonState < 3} artist={artist} title={title} year={year} />
       <div>{playbackError}</div>
       <button onClick={playButtonClick}>{ButtonStateEnum[buttonState]}</button>
       <button onClick={pauseClick}>Play/Pause</button>
