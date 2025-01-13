@@ -4,6 +4,7 @@ import { useSpotify } from "../contexts/Spotify";
 import { useSettings } from "../contexts/Settings";
 import PlaybackSetting from "./PlaybackSetting";
 import SongInfo from "./SongInfo";
+import { useGameState } from "../contexts/GameState";
 
 enum ButtonStateEnum {
   Start = 0,
@@ -19,14 +20,12 @@ interface Playback {
 
 const SpotifyPlaylist: React.FC = () => {
   const [song, setSong] = useState<Track | undefined>();
-  const [buttonState, setButtonState] = useState<number>(0);
   const [playbackError, setplaybackError] = useState<string>("");
   const [playback, setPlayback] = useState<Playback | null>();
 
   const spotify = useSpotify();
+  const gameState = useGameState();
   const settings = useSettings();
-
-  const playlistId = "26zIHVncgI9HmHlgYWwnDi";
 
   const setAvailableDevicesAsync = useCallback(async () => {
     const playback = { selected: "" } as Playback;
@@ -52,6 +51,7 @@ const SpotifyPlaylist: React.FC = () => {
 
   useEffect(() => {
     (async () => {
+      gameState.setPlaylistId("26zIHVncgI9HmHlgYWwnDi");
       if (!spotify.api) {
         settings.playback.setRepeatSong(undefined);
         return;
@@ -81,15 +81,15 @@ const SpotifyPlaylist: React.FC = () => {
 
   const playNextSong = (nextOsqId: number | undefined) => {
     (async () => {
-      const playlist = await spotify.api?.playlists.getPlaylist(playlistId);
+      const playlist = await spotify.api?.playlists.getPlaylist(gameState.playlistId);
       if (!playlist?.tracks?.total) {
-        console.error("playlist not found " + playlistId);
+        console.error("playlist not found " + gameState.playlistId);
         return;
       }
-      setButtonState(ButtonStateEnum.RevealSong);
+      gameState.setRevealSongState();
       nextOsqId = nextOsqId ? nextOsqId : Math.floor(Math.random() * (playlist?.tracks.total + 1));
       const playlistItems = await spotify.api?.playlists.getPlaylistItems(
-        playlistId,
+        gameState.playlistId,
         undefined,
         undefined,
         1,
@@ -101,12 +101,17 @@ const SpotifyPlaylist: React.FC = () => {
         const availableDevices = (await spotify.api?.player.getAvailableDevices())?.devices;
         const device = availableDevices?.filter((session) => session.is_active === true);
         if (device && device.length > 0 && device[0].id) {
-          await spotify.api?.player.startResumePlayback(device[0].id, "spotify:playlist:" + playlistId, undefined, {
-            uri: nextSong.uri,
-          });
+          await spotify.api?.player.startResumePlayback(
+            device[0].id,
+            "spotify:playlist:" + gameState.playlistId,
+            undefined,
+            {
+              uri: nextSong.uri,
+            },
+          );
         } else {
           setplaybackError("Spotify player not yet ready");
-          setButtonState(ButtonStateEnum.ErrorTryAgain);
+          gameState.setErrorState();
           return;
         }
       }
@@ -116,14 +121,14 @@ const SpotifyPlaylist: React.FC = () => {
 
   const playButtonClick = () => {
     setAvailableDevicesAsync();
-    if (buttonState !== ButtonStateEnum.RevealSong) {
+    if (gameState.currentState !== ButtonStateEnum.RevealSong) {
       playNextSong(undefined);
       return;
     }
 
     if (spotify?.api) {
       if (settings.playback.stopOnReveal && playback?.selected) spotify.api.player.pausePlayback(playback?.selected);
-      setButtonState(ButtonStateEnum.PlaySong);
+      gameState.setPlaySongState();
     }
   };
 
@@ -175,9 +180,9 @@ const SpotifyPlaylist: React.FC = () => {
         setPlaybackSetting={settings.playback.setRepeatSong}
       />
       <br />
-      <SongInfo hidden={buttonState < 3} artist={artist} title={title} year={year} />
+      <SongInfo hidden={gameState.isRevealed()} artist={artist} title={title} year={year} />
       <div>{playbackError}</div>
-      <button onClick={playButtonClick}>{ButtonStateEnum[buttonState]}</button>
+      <button onClick={playButtonClick}>{ButtonStateEnum[gameState.currentState]}</button>
       <button onClick={pauseClick}>Play/Pause</button>
     </div>
   );
