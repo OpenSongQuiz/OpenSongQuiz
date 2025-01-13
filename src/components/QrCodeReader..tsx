@@ -1,39 +1,19 @@
-import { useEffect, useState } from "react";
-import { BrowserMultiFormatReader, BarcodeFormat, DecodeHintType } from "@zxing/library";
-
-const hints = new Map();
-const formats = [BarcodeFormat.AZTEC, BarcodeFormat.DATA_MATRIX, BarcodeFormat.MAXICODE, BarcodeFormat.QR_CODE];
-hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
+import { useEffect } from "react";
+import { useQrCodeReader } from "../contexts/QrCodeReader";
 
 const QrCodeReader: React.FC = () => {
-  const [result, setResult] = useState<string>("");
+  const reader = useQrCodeReader();
 
   useEffect(() => {
-    const r = new BrowserMultiFormatReader(hints);
-    (async () => {
-      const result = await r.listVideoInputDevices();
-      decodeOnce(r, result[0].deviceId);
-    })();
-  }, []);
-
-  function decodeOnce(reader: BrowserMultiFormatReader, selectedDeviceId: string) {
-    if (!document.getElementById("video")) {
-      return false;
-    }
-
-    (async () => {
-      const result = await reader.decodeOnceFromVideoDevice(selectedDeviceId, "video");
-      setResult(result.getText());
-    })();
-  }
+    reader.decodeOnce();
+  }, [reader]);
 
   return (
-    // Todo: set result
     <div className="color-white">
-      <video id="video" className="bg-scroll h-dvh w-dvw" />
+      <video id="video" ref={reader.videoRef} className="bg-scroll h-dvh w-dvw" />
       <p>
         <span>Last result:</span>
-        <span>{result}</span>
+        <span>{reader.result}</span>
       </p>
     </div>
   );

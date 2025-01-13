@@ -48,12 +48,11 @@ const SpotifyPlaylist: React.FC = () => {
     setAvailableDevicesAsync();
   }, [setAvailableDevicesAsync, spotify.api]);
 
-
   useEffect(() => {
     (async () => {
       if (!spotify.api) {
         setRepeatSong(undefined);
-        return
+        return;
       }
 
       if (repeatSong === undefined) {
@@ -75,7 +74,6 @@ const SpotifyPlaylist: React.FC = () => {
       }
     })();
   }, [spotify.api, repeatSong]);
-
 
   if (!spotify.api) return null;
 
@@ -161,11 +159,22 @@ const SpotifyPlaylist: React.FC = () => {
         ))}
       </select>
       <label>
-        <input className="mx-1" type="checkbox" checked={stopOnReveal} onChange={() => setStopOnReveal(!stopOnReveal)} />
+        <input
+          className="mx-1"
+          type="checkbox"
+          checked={stopOnReveal}
+          onChange={() => setStopOnReveal(!stopOnReveal)}
+        />
         Stop playback on reveal
       </label>
       <label>
-        <input className="mx-1" type="checkbox" disabled={repeatSong === undefined} checked={repeatSong} onChange={() => setRepeatSong(!repeatSong)} />
+        <input
+          className="mx-1"
+          type="checkbox"
+          disabled={repeatSong === undefined}
+          checked={repeatSong}
+          onChange={() => setRepeatSong(!repeatSong)}
+        />
         Repeat song {repeatSong === undefined && "(initialising ...)"}
       </label>
       <br />
