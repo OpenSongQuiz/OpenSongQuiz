@@ -19,17 +19,15 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
   const [repeatSong, setRepeatSong] = useState<boolean | undefined>(false);
   const [stopOnReveal, setStopOnReveal] = useState<boolean | undefined>(true);
 
-  const playback = {
-    repeatSong: repeatSong,
-    stopOnReveal: stopOnReveal,
-    setRepeatSong: (arg0: boolean | undefined) => setRepeatSong(arg0),
-    setStopOnReveal: (arg0: boolean | undefined) => setStopOnReveal(arg0),
-  };
-
   return (
     <SettingsContext.Provider
       value={{
-        playback: playback,
+        playback: {
+          repeatSong: repeatSong,
+          stopOnReveal: stopOnReveal,
+          setRepeatSong: (arg0: boolean | undefined) => setRepeatSong(arg0),
+          setStopOnReveal: (arg0: boolean | undefined) => setStopOnReveal(arg0),
+        },
       }}
     >
       {children}

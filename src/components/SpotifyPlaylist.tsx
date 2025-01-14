@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Device, Track } from "@spotify/web-api-ts-sdk";
+import React, { useEffect, useState } from "react";
+import { Track } from "@spotify/web-api-ts-sdk";
 import { useSpotify } from "../contexts/Spotify";
 import { useSettings } from "../contexts/Settings";
 import PlaybackSetting from "./PlaybackSetting";
@@ -13,41 +13,26 @@ enum ButtonStateEnum {
   PlaySong = 3,
 }
 
-interface Playback {
-  devices?: Device[];
-  selected: string;
-}
-
 const SpotifyPlaylist: React.FC = () => {
   const [song, setSong] = useState<Track | undefined>();
   const [playbackError, setplaybackError] = useState<string>("");
-  const [playback, setPlayback] = useState<Playback | null>();
 
   const spotify = useSpotify();
   const gameState = useGameState();
   const settings = useSettings();
 
-  const setAvailableDevicesAsync = useCallback(async () => {
-    const playback = { selected: "" } as Playback;
-    const devices = await spotify.api?.player.getAvailableDevices();
-    playback.devices = devices?.devices;
-    const selected = playback.devices
-      ? playback.devices[playback.devices.findIndex((device) => device.is_active === true)]?.id
-      : null;
-    playback.selected = selected ? selected : "";
-    setPlayback(playback);
-  }, [spotify.api]);
-
-  const transfertPlaybackAsync = async (device_id: string) => {
+  const transferPlaybackAsync = async (device_id: string) => {
     await spotify.api?.player.transferPlayback([device_id]);
     setTimeout(async () => {
-      await setAvailableDevicesAsync();
+      spotify?.connect.refreshDevices();
     }, 1000);
   };
 
   useEffect(() => {
-    setAvailableDevicesAsync();
-  }, [setAvailableDevicesAsync, spotify.api]);
+    if (!spotify.connect.devices) {
+      spotify?.connect.refreshDevices();
+    }
+  }, [spotify]);
 
   useEffect(() => {
     (async () => {
@@ -59,23 +44,33 @@ const SpotifyPlaylist: React.FC = () => {
 
       if (settings.playback.repeatSong === undefined) {
         // On first run, init repeat song value
-        if (playback?.selected) {
+        if (spotify?.connect.devices) {
           const state = await spotify.api.player.getPlaybackState();
           settings.playback.setRepeatSong(state.repeat_state === "track");
         } else {
-          console.error("Could not determine repeat song state");
+          console.warn("Could not determine repeat song state");
           settings.playback.setRepeatSong(false);
         }
         return;
       }
 
-      if (settings.playback.repeatSong) {
-        spotify.api.player.setRepeatMode("track");
-      } else {
-        spotify.api.player.setRepeatMode("off");
+      if (spotify?.connect.activeDevice?.id) {
+        (async () => {
+          try {
+            if (settings.playback.repeatSong) {
+              await spotify?.api?.player.setRepeatMode("track");
+            } else {
+              await spotify?.api?.player.setRepeatMode("off");
+            }
+          } catch (e) {
+            if (!(e instanceof SyntaxError)) {
+              throw e;
+            }
+          }
+        })();
       }
     })();
-  }, [spotify.api, settings, playback]);
+  }, [spotify, gameState, settings]);
 
   if (!spotify.api) return null;
 
@@ -98,47 +93,32 @@ const SpotifyPlaylist: React.FC = () => {
       const nextSong = playlistItems?.items[0].track;
       setSong(nextSong);
       if (nextSong) {
-        const availableDevices = (await spotify.api?.player.getAvailableDevices())?.devices;
-        const device = availableDevices?.filter((session) => session.is_active === true);
-        if (device && device.length > 0 && device[0].id) {
-          await spotify.api?.player.startResumePlayback(
-            device[0].id,
-            "spotify:playlist:" + gameState.playlistId,
-            undefined,
-            {
-              uri: nextSong.uri,
-            },
-          );
-        } else {
-          setplaybackError("Spotify player not yet ready");
-          gameState.setErrorState();
-          return;
-        }
+        await spotify.playback.play(gameState.playlistId, nextSong);
       }
       setplaybackError("");
     })();
   };
 
   const playButtonClick = () => {
-    setAvailableDevicesAsync();
+    spotify.connect.refreshDevices();
     if (gameState.currentState !== ButtonStateEnum.RevealSong) {
       playNextSong(undefined);
       return;
     }
 
     if (spotify?.api) {
-      if (settings.playback.stopOnReveal && playback?.selected) spotify.api.player.pausePlayback(playback?.selected);
+      if (settings.playback.stopOnReveal) spotify.playback.pause();
       gameState.setPlaySongState();
     }
   };
 
   const pauseClick = async () => {
-    if (spotify?.api && playback?.selected) {
+    if (spotify?.api) {
       const state = await spotify.api.player.getPlaybackState();
       if (state.is_playing) {
-        spotify.api.player.pausePlayback(playback.selected);
+        spotify.playback.pause();
       } else {
-        spotify.api.player.startResumePlayback(playback.selected);
+        spotify.playback.startResume();
       }
     }
   };
@@ -148,18 +128,17 @@ const SpotifyPlaylist: React.FC = () => {
   const year = song?.album.release_date.slice(0, 4);
 
   const onDeviceChange = (device_id: string) => {
-    transfertPlaybackAsync(device_id);
+    transferPlaybackAsync(device_id);
   };
+
+  const selectedDevice = spotify.connect.activeDevice?.id ? spotify.connect.activeDevice.id : "";
 
   return (
     <div className="grid place-content-center">
       Play on:
-      <select
-        value={playback?.selected}
-        onChange={(e) => onDeviceChange(e.target.value)}
-        className="mx-1 w-64 text-center"
-      >
-        {playback?.devices?.map((device) => (
+      <select value={selectedDevice} onChange={(e) => onDeviceChange(e.target.value)} className="mx-1 w-64 text-center">
+        <option key="noDevice" value={""} disabled></option>
+        {spotify.connect.devices?.map((device) => (
           <option key={device.id} value={device.id?.toString()}>
             {device.name}
           </option>
