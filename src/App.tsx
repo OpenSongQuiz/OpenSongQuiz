@@ -1,9 +1,8 @@
 import "./App.css";
 import { SpotifyProvider } from "./contexts/Spotify";
-import SpotifyAuth from "./components/SpotifyAuth";
-import SpotifyPlaylist from "./components/SpotifyPlaylist";
 import { SettingsProvider } from "./contexts/Settings";
 import { GameStateProvider } from "./contexts/GameState";
+import OpenSongQuiz from "./components/OpenSongQuiz";
 /*import QrCodeReader from "./components/QrCodeReader.";
 import { QrCodeReaderProvider } from "./contexts/QrCodeReader";*/
 
@@ -12,10 +11,7 @@ function App() {
     <SettingsProvider>
       <SpotifyProvider>
         <GameStateProvider>
-          <div className="flex flex-wrap text-white place-content-center h-full">
-            <SpotifyAuth />
-            <SpotifyPlaylist />
-          </div>
+          <OpenSongQuiz />
         </GameStateProvider>
       </SpotifyProvider>
     </SettingsProvider>

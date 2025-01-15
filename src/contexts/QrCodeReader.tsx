@@ -32,7 +32,7 @@ export const QrCodeReaderProvider: React.FC<QrCodeReaderProviderProps> = ({ chil
   useEffect(() => {
     (async () => {
       const result = await reader.listVideoInputDevices();
-      setVideoDeviceId(result[0].deviceId);
+      if (result.length > 0) setVideoDeviceId(result[0].deviceId);
     })();
   }, [reader, setVideoDeviceId]);
 
@@ -50,7 +50,7 @@ export const QrCodeReaderProvider: React.FC<QrCodeReaderProviderProps> = ({ chil
   function decodeOnce() {
     (async () => {
       const result = await reader?.listVideoInputDevices();
-      if (videoRef.current) {
+      if (videoRef.current && result.length > 0) {
         const videoElement = videoRef.current;
         if (result) _decodeOnce(result[0].deviceId, videoElement);
       }
