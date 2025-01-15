@@ -31,7 +31,7 @@ const getActiveDeviceId = (devices: Devices) => {
 export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) => {
   const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
   const redirectUri = import.meta.env.VITE_SPOTIFY_REDIRECT_URI;
-  const scopes = [...Scopes.playlist, ...Scopes.userPlayback, ...Scopes.userDetails];
+  const scopes = [...Scopes.playlistRead, ...Scopes.userPlayback, 'user-read-email'];
 
   const [sdk, setSdk] = useState<SpotifyApi | undefined>(undefined);
   const [devices, setDevices] = useState<Device[] | undefined>();
