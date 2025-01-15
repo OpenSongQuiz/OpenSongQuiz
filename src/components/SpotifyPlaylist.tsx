@@ -15,7 +15,6 @@ enum ButtonStateEnum {
 
 const SpotifyPlaylist: React.FC = () => {
   const [song, setSong] = useState<Track | undefined>();
-  const [playbackError, setplaybackError] = useState<string>("");
 
   const spotify = useSpotify();
   const gameState = useGameState();
@@ -95,7 +94,6 @@ const SpotifyPlaylist: React.FC = () => {
       if (nextSong) {
         await spotify.playback.play(gameState.playlistId, nextSong);
       }
-      setplaybackError("");
     })();
   };
 
@@ -160,7 +158,6 @@ const SpotifyPlaylist: React.FC = () => {
       />
       <br />
       <SongInfo hidden={gameState.isRevealed()} artist={artist} title={title} year={year} />
-      <div>{playbackError}</div>
       <button onClick={playButtonClick}>{ButtonStateEnum[gameState.currentState]}</button>
       <button onClick={pauseClick}>Play/Pause</button>
     </div>
