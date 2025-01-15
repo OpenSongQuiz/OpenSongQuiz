@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { SpotifyApi, AuthorizationCodeWithPKCEStrategy, Scopes, Devices, Track, Device } from "@spotify/web-api-ts-sdk";
+import { SpotifyApi, AuthorizationCodeWithPKCEStrategy, Scopes, Track, Device } from "@spotify/web-api-ts-sdk";
 
 interface SpotifyContextProps {
   api?: SpotifyApi;
@@ -7,6 +7,7 @@ interface SpotifyContextProps {
     devices: Device[] | undefined;
     activeDevice: Device | undefined;
     refreshDevices: () => void;
+    setNewActiveDevice: (deviceId: string) => void;
   };
   playback: {
     pause: () => void;
@@ -23,15 +24,11 @@ type SpotifyProviderProps = {
   children?: React.ReactNode;
 };
 
-const getActiveDeviceId = (devices: Devices) => {
-  const activeDevice = devices.devices.filter((device) => device.is_active);
-  return activeDevice.length > 0 && activeDevice[0].id ? activeDevice[0] : undefined;
-};
-
 export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) => {
   const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
   const redirectUri = import.meta.env.VITE_SPOTIFY_REDIRECT_URI;
-  const scopes = [...Scopes.playlistRead, ...Scopes.userPlayback, 'user-read-email'];
+  const scopes = [...Scopes.playlistRead, ...Scopes.userPlayback, ...Scopes.userPlaybackModify, 'user-read-email'];
+
 
   const [sdk, setSdk] = useState<SpotifyApi | undefined>(undefined);
   const [devices, setDevices] = useState<Device[] | undefined>();
@@ -50,22 +47,43 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
   });
 
   useEffect(() => {
-    if (sdk && !devices) {
-      (async () => {
-        setActiveDevice(getActiveDeviceId(await sdk.player.getAvailableDevices()));
-      })();
-    }
+    if (!sdk || devices) return;
+    refreshDevices();
   }, [sdk]);
 
+  useEffect(() => {
+    if (!devices) return;
+
+    const newActiveDevice = devices.filter((device) => device.is_active);
+    if (newActiveDevice.length !== 1) return;
+
+    setActiveDevice(newActiveDevice[0])
+  }, [devices])
+
   const refreshDevices = async () => {
-    if (sdk) {
-      const devices = await sdk.player.getAvailableDevices();
-      (async () => {
-        setDevices(devices.devices);
-      })();
-      setActiveDevice(getActiveDeviceId(devices));
-    }
+    if (!sdk) return;
+
+    const newDevices = await sdk.player.getAvailableDevices();
+
+    // Manually check if device list changed, because otherwise react is constantly polling new devices.
+    if (devices?.length === newDevices.devices.length
+      && devices.every((device, index) =>
+        device.id === newDevices.devices[index].id
+        && device.is_active === newDevices.devices[index].is_active
+      )
+    ) return;
+
+    setDevices(newDevices.devices);
   };
+
+  const setNewActiveDevice = async (deviceId: string) => {
+    if (!sdk) return;
+
+    await sdk.player.transferPlayback([deviceId]);
+
+    // TODO: Solve without timeout.
+    setTimeout(refreshDevices, 1000);
+  }
 
   const checkAccessToken = async () => {
     const auth = new AuthorizationCodeWithPKCEStrategy(clientId, redirectUri, scopes);
@@ -150,6 +168,7 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
           devices,
           activeDevice,
           refreshDevices,
+          setNewActiveDevice,
         },
         playback: {
           pause,

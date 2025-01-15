@@ -5,6 +5,7 @@ import { useSettings } from "../contexts/Settings";
 import PlaybackSetting from "./PlaybackSetting";
 import SongInfo from "./SongInfo";
 import { useGameState } from "../contexts/GameState";
+import SpotifyPlayer from "./SpotifyPlayer";
 
 enum ButtonStateEnum {
   Start = 0,
@@ -15,17 +16,11 @@ enum ButtonStateEnum {
 
 const SpotifyPlaylist: React.FC = () => {
   const [song, setSong] = useState<Track | undefined>();
+  const [hasOwnConnectPlayer, setHasOwnConnectPlayer] = useState<boolean>(false);
 
   const spotify = useSpotify();
   const gameState = useGameState();
   const settings = useSettings();
-
-  const transferPlaybackAsync = async (device_id: string) => {
-    await spotify.api?.player.transferPlayback([device_id]);
-    setTimeout(async () => {
-      spotify?.connect.refreshDevices();
-    }, 1000);
-  };
 
   useEffect(() => {
     if (!spotify.connect.devices) {
@@ -125,22 +120,30 @@ const SpotifyPlaylist: React.FC = () => {
   const artist = song?.artists[0]?.name;
   const year = song?.album.release_date.slice(0, 4);
 
-  const onDeviceChange = (device_id: string) => {
-    transferPlaybackAsync(device_id);
+  const ownPlayerKey = "ownPlayer";
+  const onDeviceChange = (deviceId: string) => {
+    if (deviceId === ownPlayerKey) {
+      setHasOwnConnectPlayer(true);
+      return
+    }
+    spotify.connect.setNewActiveDevice(deviceId);
   };
 
   const selectedDevice = spotify.connect.activeDevice?.id ? spotify.connect.activeDevice.id : "";
+
+  // TODO: Play on select input should indicate loading while chaning the device
 
   return (
     <div className="grid place-content-center">
       Play on:
       <select value={selectedDevice} onChange={(e) => onDeviceChange(e.target.value)} className="mx-1 w-64 text-center">
-        <option key="noDevice" value={""} disabled></option>
+        {selectedDevice === "" ? <option key="noDevice" value={""} disabled></option> : <></>}
         {spotify.connect.devices?.map((device) => (
           <option key={device.id} value={device.id?.toString()}>
             {device.name}
           </option>
         ))}
+        {!hasOwnConnectPlayer ? <option key={ownPlayerKey} value={ownPlayerKey}>Create new device</option> : <></>}
       </select>
       <PlaybackSetting
         label={"Stop playback on reveal"}
@@ -160,6 +163,9 @@ const SpotifyPlaylist: React.FC = () => {
       <SongInfo hidden={gameState.isRevealed()} artist={artist} title={title} year={year} />
       <button onClick={playButtonClick}>{ButtonStateEnum[gameState.currentState]}</button>
       <button onClick={pauseClick}>Play/Pause</button>
+
+
+      { hasOwnConnectPlayer ? <SpotifyPlayer></SpotifyPlayer> : <></>}
     </div>
   );
 };
