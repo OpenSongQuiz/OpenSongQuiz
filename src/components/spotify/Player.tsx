@@ -1,8 +1,5 @@
-import {
-  WebPlaybackSDK,
-  usePlayerDevice,
-} from "react-spotify-web-playback-sdk";
-import { useSpotify } from "../contexts/Spotify";
+import { WebPlaybackSDK, usePlayerDevice } from "react-spotify-web-playback-sdk";
+import { useSpotify } from "../../contexts/Spotify";
 import { useEffect } from "react";
 
 const MyPlayer: React.FC = () => {
@@ -33,7 +30,7 @@ const SpotifyPlayer: React.FC = () => {
   return (
     <WebPlaybackSDK initialDeviceName="OpenSongQuiz" getOAuthToken={tokenProvider} initialVolume={0.5}>
       <div className="w-5/6 justify-center">
-        <MyPlayer/>
+        <MyPlayer />
       </div>
     </WebPlaybackSDK>
   );

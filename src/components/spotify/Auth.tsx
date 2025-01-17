@@ -1,6 +1,6 @@
 // A react component that handles the spotify authentication via the Authorization Code with PKCE flow
 import React from "react";
-import { useSpotify } from "../contexts/Spotify";
+import { useSpotify } from "../../contexts/Spotify";
 import { SpotifyLogo } from "./Icons";
 
 // TODO: Implement refresh
