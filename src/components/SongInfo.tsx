@@ -3,6 +3,7 @@ import { useSpotify } from "../contexts/Spotify";
 import { useQrCodeReader } from "../contexts/QrCodeReader";
 import { useGameState } from "../contexts/GameState";
 import { GameModesEnum, GameStateEnum } from "../types/OpenSongQuiz";
+import logo from "../../Logo.png";
 
 const SongInfo: React.FC = () => {
   const spotify = useSpotify();
@@ -14,7 +15,7 @@ const SongInfo: React.FC = () => {
   const year = spotify.playback.currentSong?.year;
 
   useEffect(() => {
-    if (gameState.gameMode === GameModesEnum.qrCode && !gameState.isRevealed()) {
+    if (gameState.gameMode === GameModesEnum.qrCode && gameState.currentState === GameStateEnum.QrCodeScan) {
       reader.decodeOnce();
     }
   }, [gameState, reader]);
@@ -23,16 +24,25 @@ const SongInfo: React.FC = () => {
     <div className="bg-[#2a2a2a] rounded-3xl size-80 my-2">
       <div
         id="song-info"
-        className={"grid " + (gameState.isRevealed() ? "" : "hidden") + " size-full text-center place-items-center"}
+        className={
+          "grid " +
+          (gameState.currentState === GameStateEnum.Revealed ? "" : "hidden") +
+          " size-full text-center place-items-center"
+        }
       >
-        <p className="text-xl">{title}</p>
-        <p className="text-3xl">{year}</p>
         <p className="text-xl">{artist}</p>
+        <p className="text-3xl">{year}</p>
+        <p className="text-xl">{title}</p>
       </div>
       {gameState.currentState === GameStateEnum.QrCodeScan ? (
-        <div className={"color-white " + (!gameState.isRevealed() && !reader?.result ? "" : "hidden")}>
+        <div className={"color-white "}>
           <video id="video" ref={reader.videoRef} className="bg-scroll h-100 w-100" />
         </div>
+      ) : (
+        <></>
+      )}
+      {gameState.currentState === GameStateEnum.SongPlaying || gameState.currentState === GameStateEnum.Start ? (
+        <img src={logo}></img>
       ) : (
         <></>
       )}

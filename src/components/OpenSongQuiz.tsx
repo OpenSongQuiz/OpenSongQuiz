@@ -9,12 +9,12 @@ import { useQrCodeReader } from "../contexts/QrCodeReader";
 import { GameModesEnum, GameStateEnum } from "../types/OpenSongQuiz";
 
 const PlayButtonStates = [
-    { gameState: GameStateEnum.Start, label: "Start Game", disabled: false},
-    { gameState: GameStateEnum.Revealed, label: "Continue", disabled: false},
-    { gameState: GameStateEnum.ErrorTryAgain, label: "Error: Please Retry", disabled: false},
-    { gameState: GameStateEnum.SongPlaying, label: "Reveal song", disabled: false},
-    { gameState: GameStateEnum.QrCodeScan, label: "Scan Your QR Code", disabled: true},
-]
+  { gameState: GameStateEnum.Start, label: "Start Game", disabled: false },
+  { gameState: GameStateEnum.Revealed, label: "Continue", disabled: false },
+  { gameState: GameStateEnum.ErrorTryAgain, label: "Error: Please Retry", disabled: false },
+  { gameState: GameStateEnum.SongPlaying, label: "Reveal song", disabled: false },
+  { gameState: GameStateEnum.QrCodeScan, label: "Scan Your QR Code", disabled: true },
+];
 
 const GameModeSelection: React.FC = () => {
   const gameState = useGameState();
@@ -38,7 +38,9 @@ const OpenSongQuiz: React.FC = () => {
 
   const playNextSong = useCallback(
     async (playlistId: string, songPosition: number | undefined) => {
-      return (!songPosition ? await spotify.playback.setRandomSongFromPlaylist(playlistId) : await spotify.playback.setSongFromPlaylist(playlistId, songPosition));
+      return !songPosition
+        ? await spotify.playback.setRandomSongFromPlaylist(playlistId)
+        : await spotify.playback.setSongFromPlaylist(playlistId, songPosition);
     },
     [spotify],
   );
@@ -56,19 +58,21 @@ const OpenSongQuiz: React.FC = () => {
   }, [gameState, qrCodeReader, playNextSong]);
 
   const playButtonClick = async () => {
-    if (gameState.currentState === GameStateEnum.Start || gameState.currentState === GameStateEnum.Revealed || gameState.currentState === GameStateEnum.ErrorTryAgain) {
-        if (gameState.gameMode === GameModesEnum.qrCode) {
-            gameState.setGameState(GameStateEnum.QrCodeScan);
-        }
-        else {
-            gameState.setGameState(GameStateEnum.SongPlaying);
-            const songPlaying = await playNextSong(gameState.playlistId, undefined);
-            if (!songPlaying) gameState.setGameState(GameStateEnum.ErrorTryAgain);
-        }
-    }
-    else if (gameState.currentState === GameStateEnum.SongPlaying) {
-        if(settings.playback.stopOnReveal) spotify.playback.pause();
-        gameState.setGameState(GameStateEnum.Revealed);
+    if (
+      gameState.currentState === GameStateEnum.Start ||
+      gameState.currentState === GameStateEnum.Revealed ||
+      gameState.currentState === GameStateEnum.ErrorTryAgain
+    ) {
+      if (gameState.gameMode === GameModesEnum.qrCode) {
+        gameState.setGameState(GameStateEnum.QrCodeScan);
+      } else {
+        gameState.setGameState(GameStateEnum.SongPlaying);
+        const songPlaying = await playNextSong(gameState.playlistId, undefined);
+        if (!songPlaying) gameState.setGameState(GameStateEnum.ErrorTryAgain);
+      }
+    } else if (gameState.currentState === GameStateEnum.SongPlaying) {
+      if (settings.playback.stopOnReveal) spotify.playback.pause();
+      gameState.setGameState(GameStateEnum.Revealed);
     }
   };
 
@@ -82,7 +86,9 @@ const OpenSongQuiz: React.FC = () => {
             <SpotifyPlaylist />
             <SongInfo />
             <button onClick={spotify.playback.playPause}>Play/Pause</button>
-            <button onClick={playButtonClick} disabled={PlayButtonStates[gameState.currentState].disabled}>{PlayButtonStates[gameState.currentState].label}</button>
+            <button onClick={playButtonClick} disabled={PlayButtonStates[gameState.currentState].disabled}>
+              {PlayButtonStates[gameState.currentState].label}
+            </button>
           </div>
         ) : (
           <GameModeSelection />

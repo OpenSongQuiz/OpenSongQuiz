@@ -19,7 +19,7 @@ export enum GameStateEnum {
   Revealed = 1,
   ErrorTryAgain = 2,
   SongPlaying = 3,
-  QrCodeScan = 4
+  QrCodeScan = 4,
 }
 
 export interface QrCodeContent {

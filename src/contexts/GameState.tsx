@@ -11,7 +11,6 @@ interface GameStateContextProps {
   setGameMode: (mode: number | undefined) => void;
   setPlaylistId: (playlistId: string) => void;
   setSongId: (songId: string) => void;
-  isRevealed: () => boolean;
 }
 
 const GameStateContext = createContext<GameStateContextProps | undefined>(undefined);
@@ -40,19 +39,13 @@ export const GameStateProvider: React.FC<GameStateProviderProps> = ({ children }
         songId,
         gameMode,
         setGameState: (state) => {
-          setCurrentState(state)
+          setCurrentState(state);
         },
         setGameMode: (mode) => {
-          setGameMode(mode)
+          setGameMode(mode);
         },
         setPlaylistId: setPlaylistId,
         setSongId: setSongId,
-        isRevealed: () => {
-          if (currentState === GameStateEnum.Revealed) {
-            return true;
-          }
-          return false;
-        },
       }}
     >
       {children}

@@ -195,9 +195,8 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
       const contextUri = "spotify:playlist:" + playlistId;
       try {
         await sdk.player.startResumePlayback(activeDevice.id, contextUri, undefined, { uri: track.uri });
-      }
-      catch (e) {
-        console.error(e)
+      } catch (e) {
+        console.error(e);
         return false;
       }
       return true;
