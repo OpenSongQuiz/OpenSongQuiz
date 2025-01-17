@@ -1,18 +1,19 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import playlists from "../data/playlists.json";
 
 interface GameStateContextProps {
   currentState: number;
   playlistId: string;
   songId: string;
-  gameMode: number | undefined,
+  gameMode: number | undefined;
   setStartState: () => void;
   setRevealSongState: () => void;
   setErrorState: () => void;
   setPlaySongState: () => void;
   setPlaylistId: (playlistId: string) => void;
   setSongId: (songId: string) => void;
-  setOnlineMode: () => void,
-  setQrCodeMode: () => void,
+  setOnlineMode: () => void;
+  setQrCodeMode: () => void;
   isRevealed: () => boolean;
 }
 
@@ -25,7 +26,7 @@ export enum GameStateEnum {
   PlaySong = 3,
 }
 
-export enum GameModeEnum {
+export enum GameModesEnum {
   online = 0,
   qrCode = 1,
 }
@@ -39,6 +40,12 @@ export const GameStateProvider: React.FC<GameStateProviderProps> = ({ children }
   const [gameMode, setGameMode] = useState<number | undefined>(undefined);
   const [playlistId, setPlaylistId] = useState<string>("");
   const [songId, setSongId] = useState<string>("");
+
+  useEffect(() => {
+    if (!playlistId) {
+      setPlaylistId(playlists.playlists[0].spotifyId);
+    }
+  }, [playlistId]);
 
   return (
     <GameStateContext.Provider
@@ -62,10 +69,10 @@ export const GameStateProvider: React.FC<GameStateProviderProps> = ({ children }
         setPlaylistId: setPlaylistId,
         setSongId: setSongId,
         setOnlineMode: () => {
-          setGameMode(GameModeEnum.online)
+          setGameMode(GameModesEnum.online);
         },
         setQrCodeMode: () => {
-          setGameMode(GameModeEnum.qrCode)
+          setGameMode(GameModesEnum.qrCode);
         },
         isRevealed: () => {
           return currentState < 3;

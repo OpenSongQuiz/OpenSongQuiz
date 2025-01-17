@@ -1,21 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Track } from "@spotify/web-api-ts-sdk";
-import { useSpotify } from "../contexts/Spotify";
-import { useSettings } from "../contexts/Settings";
-import PlaybackSetting from "./PlaybackSetting";
-import SongInfo from "./SongInfo";
-import { useGameState } from "../contexts/GameState";
-import SpotifyPlayer from "./SpotifyPlayer";
-
-enum ButtonStateEnum {
-  Start = 0,
-  RevealSong = 1,
-  ErrorTryAgain = 2,
-  PlaySong = 3,
-}
+import { useSpotify } from "../../contexts/Spotify";
+import { useSettings } from "../../contexts/Settings";
+import PlaybackSetting from "./../PlaybackSetting";
+import { useGameState } from "../../contexts/GameState";
+import SpotifyPlayer from "./Player";
+import playlists from "../../data/playlists.json";
 
 const SpotifyPlaylist: React.FC = () => {
-  const [song, setSong] = useState<Track | undefined>();
   const [hasOwnConnectPlayer, setHasOwnConnectPlayer] = useState<boolean>(false);
 
   const spotify = useSpotify();
@@ -23,14 +14,7 @@ const SpotifyPlaylist: React.FC = () => {
   const settings = useSettings();
 
   useEffect(() => {
-    if (!spotify.connect.devices) {
-      spotify?.connect.refreshDevices();
-    }
-  }, [spotify]);
-
-  useEffect(() => {
     (async () => {
-      gameState.setPlaylistId("26zIHVncgI9HmHlgYWwnDi");
       if (!spotify.api) {
         settings.playback.setRepeatSong(undefined);
         return;
@@ -68,65 +52,17 @@ const SpotifyPlaylist: React.FC = () => {
 
   if (!spotify.api) return null;
 
-  const playNextSong = (nextOsqId: number | undefined) => {
-    (async () => {
-      const playlist = await spotify.api?.playlists.getPlaylist(gameState.playlistId);
-      if (!playlist?.tracks?.total) {
-        console.error("playlist not found " + gameState.playlistId);
-        return;
-      }
-      gameState.setRevealSongState();
-      nextOsqId = nextOsqId ? nextOsqId : Math.floor(Math.random() * (playlist?.tracks.total + 1));
-      const playlistItems = await spotify.api?.playlists.getPlaylistItems(
-        gameState.playlistId,
-        undefined,
-        undefined,
-        1,
-        nextOsqId - 1,
-      );
-      const nextSong = playlistItems?.items[0].track;
-      setSong(nextSong);
-      if (nextSong) {
-        await spotify.playback.play(gameState.playlistId, nextSong);
-      }
-    })();
-  };
-
-  const playButtonClick = () => {
-    spotify.connect.refreshDevices();
-    if (gameState.currentState !== ButtonStateEnum.RevealSong) {
-      playNextSong(undefined);
-      return;
-    }
-
-    if (spotify?.api) {
-      if (settings.playback.stopOnReveal) spotify.playback.pause();
-      gameState.setPlaySongState();
-    }
-  };
-
-  const pauseClick = async () => {
-    if (spotify?.api) {
-      const state = await spotify.api.player.getPlaybackState();
-      if (state.is_playing) {
-        spotify.playback.pause();
-      } else {
-        spotify.playback.startResume();
-      }
-    }
-  };
-
-  const title = song?.name;
-  const artist = song?.artists[0]?.name;
-  const year = song?.album.release_date.slice(0, 4);
-
   const ownPlayerKey = "ownPlayer";
   const onDeviceChange = (deviceId: string) => {
     if (deviceId === ownPlayerKey) {
       setHasOwnConnectPlayer(true);
-      return
+      return;
     }
     spotify.connect.setNewActiveDevice(deviceId);
+  };
+
+  const onPlaylistChange = (playlistId: string) => {
+    gameState.setPlaylistId(playlistId);
   };
 
   const selectedDevice = spotify.connect.activeDevice?.id ? spotify.connect.activeDevice.id : "";
@@ -134,7 +70,7 @@ const SpotifyPlaylist: React.FC = () => {
   // TODO: Play on select input should indicate loading while chaning the device
 
   return (
-    <div className="grid place-content-center">
+    <>
       Play on:
       <select value={selectedDevice} onChange={(e) => onDeviceChange(e.target.value)} className="mx-1 w-64 text-center">
         {selectedDevice === "" ? <option key="noDevice" value={""} disabled></option> : <></>}
@@ -143,7 +79,25 @@ const SpotifyPlaylist: React.FC = () => {
             {device.name}
           </option>
         ))}
-        {!hasOwnConnectPlayer ? <option key={ownPlayerKey} value={ownPlayerKey}>Create new device</option> : <></>}
+        {!hasOwnConnectPlayer ? (
+          <option key={ownPlayerKey} value={ownPlayerKey}>
+            Create new device
+          </option>
+        ) : (
+          <></>
+        )}
+      </select>
+      Playlist
+      <select
+        value={gameState.playlistId}
+        onChange={(e) => onPlaylistChange(e.target.value)}
+        className="mx-1 w-64 text-center"
+      >
+        {playlists.playlists.map((playlist) => (
+          <option key={playlist.spotifyId} value={playlist.spotifyId}>
+            {playlist.name}
+          </option>
+        ))}
       </select>
       <PlaybackSetting
         label={"Stop playback on reveal"}
@@ -159,14 +113,8 @@ const SpotifyPlaylist: React.FC = () => {
         }}
         setPlaybackSetting={settings.playback.setRepeatSong}
       />
-      <br />
-      <SongInfo hidden={gameState.isRevealed()} artist={artist} title={title} year={year} />
-      <button onClick={playButtonClick}>{ButtonStateEnum[gameState.currentState]}</button>
-      <button onClick={pauseClick}>Play/Pause</button>
-
-
-      { hasOwnConnectPlayer ? <SpotifyPlayer></SpotifyPlayer> : <></>}
-    </div>
+      {hasOwnConnectPlayer ? <SpotifyPlayer></SpotifyPlayer> : <></>}
+    </>
   );
 };
 
