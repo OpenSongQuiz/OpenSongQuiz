@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import playlists from "../data/playlists.json";
+import { GameModesEnum, GameStateEnum } from "../types/OpenSongQuiz";
 
 interface GameStateContextProps {
   currentState: number;
@@ -18,18 +19,6 @@ interface GameStateContextProps {
 }
 
 const GameStateContext = createContext<GameStateContextProps | undefined>(undefined);
-
-export enum GameStateEnum {
-  Start = 0,
-  RevealSong = 1,
-  ErrorTryAgain = 2,
-  PlaySong = 3,
-}
-
-export enum GameModesEnum {
-  online = 0,
-  qrCode = 1,
-}
 
 interface GameStateProviderProps {
   children?: React.ReactNode;

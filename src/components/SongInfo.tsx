@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import { useSpotify } from "../contexts/Spotify";
 import { useQrCodeReader } from "../contexts/QrCodeReader";
-import { GameModesEnum, useGameState } from "../contexts/GameState";
+import { useGameState } from "../contexts/GameState";
+import { GameModesEnum } from "../types/OpenSongQuiz";
 
 const SongInfo: React.FC = () => {
   const spotify = useSpotify();

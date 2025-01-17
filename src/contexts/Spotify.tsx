@@ -79,7 +79,6 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
     setIntervalId(
       setInterval(() => {
         refreshDevices();
-        //(async () => {const track = await sdk.tracks.get("7e2ExzCUgjOntmlZCTDSWk"); console.log(track)})();
       }, 5000),
     );
 

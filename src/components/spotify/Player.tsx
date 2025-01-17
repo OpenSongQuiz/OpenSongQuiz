@@ -22,9 +22,11 @@ const SpotifyPlayer: React.FC = () => {
     return null;
   }
 
-  const tokenProvider = async (callback: any) => {
+  const tokenProvider = async (callback: (token: string) => void) => {
     const token = await spotify.api?.getAccessToken();
-    callback(token?.access_token);
+    if (token) {
+      callback(token.access_token);
+    }
   };
 
   return (
