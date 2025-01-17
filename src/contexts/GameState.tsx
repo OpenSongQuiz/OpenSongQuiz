@@ -1,20 +1,16 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, SetStateAction, useContext, useEffect, useState } from "react";
 import playlists from "../data/playlists.json";
-import { GameModesEnum, GameStateEnum } from "../types/OpenSongQuiz";
+import { GameStateEnum } from "../types/OpenSongQuiz";
 
 interface GameStateContextProps {
   currentState: number;
   playlistId: string;
   songId: string;
   gameMode: number | undefined;
-  setStartState: () => void;
-  setRevealSongState: () => void;
-  setErrorState: () => void;
-  setPlaySongState: () => void;
+  setGameState: (state: SetStateAction<number>) => void;
+  setGameMode: (mode: number | undefined) => void;
   setPlaylistId: (playlistId: string) => void;
   setSongId: (songId: string) => void;
-  setOnlineMode: () => void;
-  setQrCodeMode: () => void;
   isRevealed: () => boolean;
 }
 
@@ -43,28 +39,19 @@ export const GameStateProvider: React.FC<GameStateProviderProps> = ({ children }
         playlistId,
         songId,
         gameMode,
-        setStartState: () => {
-          setCurrentState(GameStateEnum.Start);
+        setGameState: (state) => {
+          setCurrentState(state)
         },
-        setRevealSongState: () => {
-          setCurrentState(GameStateEnum.RevealSong);
-        },
-        setErrorState: () => {
-          setCurrentState(GameStateEnum.ErrorTryAgain);
-        },
-        setPlaySongState: () => {
-          setCurrentState(GameStateEnum.PlaySong);
+        setGameMode: (mode) => {
+          setGameMode(mode)
         },
         setPlaylistId: setPlaylistId,
         setSongId: setSongId,
-        setOnlineMode: () => {
-          setGameMode(GameModesEnum.online);
-        },
-        setQrCodeMode: () => {
-          setGameMode(GameModesEnum.qrCode);
-        },
         isRevealed: () => {
-          return currentState < 3;
+          if (currentState === GameStateEnum.Revealed) {
+            return true;
+          }
+          return false;
         },
       }}
     >

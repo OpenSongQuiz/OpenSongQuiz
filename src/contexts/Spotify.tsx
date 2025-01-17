@@ -15,10 +15,10 @@ interface SpotifyContextProps {
     setCurrentSong: (song: Song) => void;
     pause: () => void;
     startResume: () => void;
-    play: (playlistId: string, track: Track) => void;
+    play: (playlistId: string, track: Track) => Promise<boolean>;
     playPause: () => void;
-    setSongFromPlaylist: (playlistId: string, position: number) => void;
-    setRandomSongFromPlaylist: (playlistId: string) => void;
+    setSongFromPlaylist: (playlistId: string, position: number) => Promise<boolean>;
+    setRandomSongFromPlaylist: (playlistId: string) => Promise<boolean>;
   };
   login: () => Promise<void>;
   logout: () => void;
@@ -193,8 +193,16 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
   const play = async (playlistId: string, track: Track) => {
     if (sdk && activeDevice?.id) {
       const contextUri = "spotify:playlist:" + playlistId;
-      sdk.player.startResumePlayback(activeDevice.id, contextUri, undefined, { uri: track.uri });
+      try {
+        await sdk.player.startResumePlayback(activeDevice.id, contextUri, undefined, { uri: track.uri });
+      }
+      catch (e) {
+        console.error(e)
+        return false;
+      }
+      return true;
     }
+    return false;
   };
 
   const playPause = async () => {
@@ -213,7 +221,7 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
       const playlist = await sdk.playlists.getPlaylist(playlistId);
       if (!playlist?.tracks?.total) {
         console.error("playlist not found " + playlistId);
-        return;
+        return false;
       }
       const playlistItems = await sdk.playlists.getPlaylistItems(playlistId, undefined, undefined, 1, position - 1);
       const cleanedReleaseDate = await getCleanedReleaseDate(playlistItems?.items[0].track, true);
@@ -228,16 +236,18 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
 
       setCurrentSong(song);
 
-      play(playlistId, playlistItems?.items[0].track);
+      return play(playlistId, playlistItems?.items[0].track);
     }
+    return false;
   };
 
   const setRandomSongFromPlaylist = async (playlistId: string) => {
     if (sdk && activeDevice?.id) {
       const playlist = await sdk.playlists.getPlaylist(playlistId);
       const randomSong = Math.floor(Math.random() * (playlist?.tracks.total + 1));
-      await setSongFromPlaylist(playlistId, randomSong);
+      return await setSongFromPlaylist(playlistId, randomSong);
     }
+    return false;
   };
 
   return (

@@ -1,16 +1,19 @@
 import { BarcodeFormat, BrowserMultiFormatReader, DecodeHintType } from "@zxing/library";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { QrCodeContent } from "../types/OpenSongQuiz";
+import playlists from "../data/playlists.json";
 
 const hints = new Map();
 const formats = [BarcodeFormat.AZTEC, BarcodeFormat.DATA_MATRIX, BarcodeFormat.MAXICODE, BarcodeFormat.QR_CODE];
 hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
 
 interface QrCodeReaderContextProps {
-  result: string;
+  result?: QrCodeContent;
   reader?: BrowserMultiFormatReader;
   videoDeviceId: string;
   videoRef: React.MutableRefObject<HTMLVideoElement | null>;
-  decodeOnce: () => void;
+  decodeOnce: () => Promise<void>;
+  resetResult: () => void;
 }
 
 const QrCodeReaderContext = createContext<QrCodeReaderContextProps | undefined>(undefined);
@@ -20,7 +23,7 @@ interface QrCodeReaderProviderProps {
 }
 
 export const QrCodeReaderProvider: React.FC<QrCodeReaderProviderProps> = ({ children }) => {
-  const [result, setResult] = useState<string>("");
+  const [result, setResult] = useState<QrCodeContent | undefined>(undefined);
   const [videoDeviceId, setVideoDeviceId] = useState<string>("");
 
   const readerCallback = useCallback(() => new BrowserMultiFormatReader(hints), []);
@@ -36,26 +39,51 @@ export const QrCodeReaderProvider: React.FC<QrCodeReaderProviderProps> = ({ chil
     })();
   }, [reader, setVideoDeviceId]);
 
-  function _decodeOnce(selectedDeviceId: string, videoElement: HTMLVideoElement) {
+  const _getPropretiaryContent = (fullUrl: string) => {
+    const splitResult = fullUrl.split("/");
+
+    const countryCode = splitResult[1];
+    const propretiaryId = splitResult.length > 3 ? splitResult[2] : "de01";
+    const playlistPosition = parseInt(splitResult.length > 3 ? splitResult[3] : splitResult[2]);
+
+    const filteredPlaylists = playlists.playlists.filter(
+      (playlist) => playlist.propretiaryId === propretiaryId && playlist.countryCode === countryCode,
+    );
+
+    const content = {
+      fullUrl: fullUrl,
+      type: splitResult[0],
+      playlistId: filteredPlaylists.length > 0 ? filteredPlaylists[0].spotifyId : "",
+      playlistPosition: playlistPosition,
+    } as QrCodeContent;
+
+    return content;
+  };
+
+  const _decodeOnce = async (selectedDeviceId: string, videoElement: HTMLVideoElement) => {
     if (videoElement.readyState === 0) {
-      (async () => {
-        const result = await reader.decodeOnceFromVideoDevice(selectedDeviceId, videoElement);
-        setResult(result.getText());
-      })();
+      const qrCode = await reader.decodeOnceFromVideoDevice(selectedDeviceId, videoElement);
+
+      const fullUrl = qrCode.getText();
+      const splitResult = fullUrl.split("/");
+      const content = splitResult[0] === "www.hitstergame.com" ? _getPropretiaryContent(fullUrl) : undefined;
+      if (content) setResult(content);
     } else {
       console.debug("video already in state: " + videoElement.readyState);
     }
-  }
+  };
 
-  function decodeOnce() {
-    (async () => {
-      const result = await reader?.listVideoInputDevices();
-      if (videoRef.current && result.length > 0) {
-        const videoElement = videoRef.current;
-        if (result) _decodeOnce(result[0].deviceId, videoElement);
-      }
-    })();
-  }
+  const decodeOnce = async () => {
+    const result = await reader?.listVideoInputDevices();
+    if (videoRef.current && result.length > 0) {
+      const videoElement = videoRef.current;
+      if (result) _decodeOnce(result[0].deviceId, videoElement);
+    }
+  };
+
+  const resetResult = () => {
+    setResult(undefined);
+  };
 
   return (
     <QrCodeReaderContext.Provider
@@ -65,6 +93,7 @@ export const QrCodeReaderProvider: React.FC<QrCodeReaderProviderProps> = ({ chil
         videoDeviceId,
         videoRef,
         decodeOnce,
+        resetResult,
       }}
     >
       {children}

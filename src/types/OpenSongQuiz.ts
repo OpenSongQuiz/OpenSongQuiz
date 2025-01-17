@@ -10,13 +10,24 @@ export interface Song {
 export interface Playlist {
   name: string;
   spotifyId: string;
+  countryCode: string;
+  propretiaryId: string;
 }
 
 export enum GameStateEnum {
   Start = 0,
-  RevealSong = 1,
+  Revealed = 1,
   ErrorTryAgain = 2,
-  PlaySong = 3,
+  SongPlaying = 3,
+  QrCodeScan = 4
+}
+
+export interface QrCodeContent {
+  fullUrl: string;
+  countryCode: string;
+  playlistPosition: number;
+  playlistId: string;
+  type: string;
 }
 
 export enum GameModesEnum {

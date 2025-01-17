@@ -2,11 +2,21 @@
   "playlists": [
     {
       "name": "Hitster",
-      "spotifyId": "26zIHVncgI9HmHlgYWwnDi"
+      "spotifyId": "26zIHVncgI9HmHlgYWwnDi",
+      "countryCode": "de",
+      "propretiaryId": "de01"
     },
     {
       "name": "Guilty Pleasures",
-      "spotifyId": "2u0vgWYqU1TWVcDehJnZuN"
+      "spotifyId": "2u0vgWYqU1TWVcDehJnZuN",
+      "countryCode": "de",
+      "propretiaryId": "aaaa0015"
+    },
+    {
+      "name": "Summer Party",
+      "spotifyId": "15hZ0ez6sHYhTeCCshxJTN",
+      "countryCode": "de",
+      "propretiaryId": "aaaa0012"
     },
     {
       "name": "Hüttengaudi",
