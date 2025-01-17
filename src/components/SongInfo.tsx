@@ -21,7 +21,7 @@ const SongInfo: React.FC = () => {
   }, [gameState, reader]);
 
   return (
-    <div className="bg-[#2a2a2a] rounded-3xl size-80 my-2">
+    <div className="bg-[#2a2a2a] rounded-3xl size-80 my-2 overflow-hidden block">
       <div
         id="song-info"
         className={
@@ -35,9 +35,7 @@ const SongInfo: React.FC = () => {
         <p className="text-xl">{title}</p>
       </div>
       {gameState.currentState === GameStateEnum.QrCodeScan ? (
-        <div className={"color-white "}>
-          <video id="video" ref={reader.videoRef} className="bg-scroll h-100 w-100" />
-        </div>
+        <video id="video" ref={reader.videoRef} className="size-80" />
       ) : (
         <></>
       )}

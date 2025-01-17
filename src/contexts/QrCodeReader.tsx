@@ -1,5 +1,5 @@
 import { BarcodeFormat, BrowserMultiFormatReader, DecodeHintType } from "@zxing/library";
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { QrCodeContent } from "../types/OpenSongQuiz";
 import playlists from "../data/playlists.json";
 
@@ -10,7 +10,6 @@ hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
 interface QrCodeReaderContextProps {
   result?: QrCodeContent;
   reader?: BrowserMultiFormatReader;
-  videoDeviceId: string;
   videoRef: React.MutableRefObject<HTMLVideoElement | null>;
   decodeOnce: () => Promise<void>;
   resetResult: () => void;
@@ -24,20 +23,12 @@ interface QrCodeReaderProviderProps {
 
 export const QrCodeReaderProvider: React.FC<QrCodeReaderProviderProps> = ({ children }) => {
   const [result, setResult] = useState<QrCodeContent | undefined>(undefined);
-  const [videoDeviceId, setVideoDeviceId] = useState<string>("");
 
   const readerCallback = useCallback(() => new BrowserMultiFormatReader(hints), []);
 
   const reader = useMemo(readerCallback, [readerCallback]);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      const result = await reader.listVideoInputDevices();
-      if (result.length > 0) setVideoDeviceId(result[0].deviceId);
-    })();
-  }, [reader, setVideoDeviceId]);
 
   const _getPropretiaryContent = (fullUrl: string) => {
     const splitResult = fullUrl.split("/");
@@ -60,9 +51,11 @@ export const QrCodeReaderProvider: React.FC<QrCodeReaderProviderProps> = ({ chil
     return content;
   };
 
-  const _decodeOnce = async (selectedDeviceId: string, videoElement: HTMLVideoElement) => {
+  const _decodeOnce = async (videoElement: HTMLVideoElement) => {
     if (videoElement.readyState === 0) {
-      const qrCode = await reader.decodeOnceFromVideoDevice(selectedDeviceId, videoElement);
+      const qrCode = await reader.decodeOnceFromVideoDevice("", videoElement);
+
+      console.log(qrCode);
 
       const fullUrl = qrCode.getText();
       const splitResult = fullUrl.split("/");
@@ -74,10 +67,8 @@ export const QrCodeReaderProvider: React.FC<QrCodeReaderProviderProps> = ({ chil
   };
 
   const decodeOnce = async () => {
-    const result = await reader?.listVideoInputDevices();
-    if (videoRef.current && result.length > 0) {
-      const videoElement = videoRef.current;
-      if (result) _decodeOnce(result[0].deviceId, videoElement);
+    if (videoRef.current) {
+      _decodeOnce(videoRef.current);
     }
   };
 
@@ -90,7 +81,6 @@ export const QrCodeReaderProvider: React.FC<QrCodeReaderProviderProps> = ({ chil
       value={{
         result,
         reader,
-        videoDeviceId,
         videoRef,
         decodeOnce,
         resetResult,
