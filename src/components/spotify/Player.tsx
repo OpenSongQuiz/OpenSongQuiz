@@ -18,7 +18,7 @@ const MyPlayer: React.FC = () => {
 const SpotifyPlayer: React.FC = () => {
   const spotify = useSpotify();
 
-  if (!spotify?.api) {
+  if (!spotify?.api?.getAccessToken()) {
     return null;
   }
 

@@ -6,14 +6,14 @@ import SongInfo from "./SongInfo";
 import { useSpotify } from "../contexts/Spotify";
 import { useSettings } from "../contexts/Settings";
 import { useQrCodeReader } from "../contexts/QrCodeReader";
-import { GameModesEnum, GameStateEnum } from "../types/OpenSongQuiz";
+import { GameModes as GameModes, GameStates as GameStates } from "../types/OpenSongQuiz";
 
 const PlayButtonStates = [
-  { gameState: GameStateEnum.Start, label: "Start Game", disabled: false },
-  { gameState: GameStateEnum.Revealed, label: "Continue", disabled: false },
-  { gameState: GameStateEnum.ErrorTryAgain, label: "Error: Please Retry", disabled: false },
-  { gameState: GameStateEnum.SongPlaying, label: "Reveal song", disabled: false },
-  { gameState: GameStateEnum.QrCodeScan, label: "Scan Your QR Code", disabled: true },
+  { gameState: GameStates.Start, label: "Start Game", disabled: false },
+  { gameState: GameStates.Revealed, label: "Continue", disabled: false },
+  { gameState: GameStates.ErrorTryAgain, label: "Error: Please Retry", disabled: false },
+  { gameState: GameStates.SongPlaying, label: "Reveal song", disabled: false },
+  { gameState: GameStates.QrCodeScan, label: "Scan Your QR Code", disabled: true },
 ];
 
 const GameModeSelection: React.FC = () => {
@@ -23,8 +23,8 @@ const GameModeSelection: React.FC = () => {
     <>
       <div className="grid">
         <h1 className="text-2xl my-2">Welcome to OpenSongQuiz</h1>
-        <button onClick={() => gameState.setGameMode(GameModesEnum.online)}>Play online</button>
-        <button onClick={() => gameState.setGameMode(GameModesEnum.qrCode)}>Play with Qr Codes</button>
+        <button onClick={() => gameState.setGameMode(GameModes.online)}>Play online</button>
+        <button onClick={() => gameState.setGameMode(GameModes.qrCode)}>Play with Qr Codes</button>
       </div>
     </>
   );
@@ -47,11 +47,11 @@ const OpenSongQuiz: React.FC = () => {
 
   // In QrCodeMode play song from qrCode
   useEffect(() => {
-    if (gameState.currentState === GameStateEnum.QrCodeScan && qrCodeReader.result !== undefined) {
+    if (gameState.currentState === GameStates.QrCodeScan && qrCodeReader.result !== undefined) {
       const result = qrCodeReader.result;
       console.debug(result);
       qrCodeReader.resetResult();
-      gameState.setGameState(GameStateEnum.SongPlaying);
+      gameState.setGameState(GameStates.SongPlaying);
       gameState.setPlaylistId(result.playlistId);
       playNextSong(result.playlistId, result.playlistPosition);
     }
@@ -59,20 +59,20 @@ const OpenSongQuiz: React.FC = () => {
 
   const playButtonClick = async () => {
     if (
-      gameState.currentState === GameStateEnum.Start ||
-      gameState.currentState === GameStateEnum.Revealed ||
-      gameState.currentState === GameStateEnum.ErrorTryAgain
+      gameState.currentState === GameStates.Start ||
+      gameState.currentState === GameStates.Revealed ||
+      gameState.currentState === GameStates.ErrorTryAgain
     ) {
-      if (gameState.gameMode === GameModesEnum.qrCode) {
-        gameState.setGameState(GameStateEnum.QrCodeScan);
+      if (gameState.gameMode === GameModes.qrCode) {
+        gameState.setGameState(GameStates.QrCodeScan);
       } else {
-        gameState.setGameState(GameStateEnum.SongPlaying);
+        gameState.setGameState(GameStates.SongPlaying);
         const songPlaying = await playNextSong(gameState.playlistId, undefined);
-        if (!songPlaying) gameState.setGameState(GameStateEnum.ErrorTryAgain);
+        if (!songPlaying) gameState.setGameState(GameStates.ErrorTryAgain);
       }
-    } else if (gameState.currentState === GameStateEnum.SongPlaying) {
+    } else if (gameState.currentState === GameStates.SongPlaying) {
       if (settings.playback.stopOnReveal) spotify.playback.pause();
-      gameState.setGameState(GameStateEnum.Revealed);
+      gameState.setGameState(GameStates.Revealed);
     }
   };
 

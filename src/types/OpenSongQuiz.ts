@@ -14,12 +14,17 @@ export interface Playlist {
   propretiaryId: string;
 }
 
-export enum GameStateEnum {
+export enum GameStates {
   Start = 0,
   Revealed = 1,
   ErrorTryAgain = 2,
   SongPlaying = 3,
   QrCodeScan = 4,
+}
+
+export enum GameModes {
+  online = 0,
+  qrCode = 1,
 }
 
 export interface QrCodeContent {
@@ -28,9 +33,4 @@ export interface QrCodeContent {
   playlistPosition: number;
   playlistId: string;
   type: string;
-}
-
-export enum GameModesEnum {
-  online = 0,
-  qrCode = 1,
 }

@@ -1,6 +1,6 @@
-import { createContext, SetStateAction, useContext, useEffect, useState } from "react";
+import { createContext, SetStateAction, useContext, useState } from "react";
 import playlists from "../data/playlists.json";
-import { GameStateEnum } from "../types/OpenSongQuiz";
+import { GameStates } from "../types/OpenSongQuiz";
 
 interface GameStateContextProps {
   currentState: number;
@@ -20,16 +20,10 @@ interface GameStateProviderProps {
 }
 
 export const GameStateProvider: React.FC<GameStateProviderProps> = ({ children }) => {
-  const [currentState, setCurrentState] = useState(GameStateEnum.Start);
+  const [currentState, setCurrentState] = useState(GameStates.Start);
   const [gameMode, setGameMode] = useState<number | undefined>(undefined);
-  const [playlistId, setPlaylistId] = useState<string>("");
+  const [playlistId, setPlaylistId] = useState<string>(playlists.playlists[0].spotifyId);
   const [songId, setSongId] = useState<string>("");
-
-  useEffect(() => {
-    if (!playlistId) {
-      setPlaylistId(playlists.playlists[0].spotifyId);
-    }
-  }, [playlistId]);
 
   return (
     <GameStateContext.Provider
