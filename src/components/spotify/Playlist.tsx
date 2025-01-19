@@ -44,22 +44,24 @@ const SpotifyPlaylist: React.FC = () => {
     const newMode = newRepeatSongState ? "track" : "off";
 
     setIsChangingRepeatSong(true);
-    spotify?.api?.player.setRepeatMode(newMode).then(
-      () => {
+    spotify?.api?.player
+      .setRepeatMode(newMode)
+      .then(() => {
         settings.playback.setRepeatSong(newRepeatSongState);
-      }
-    ).catch(err => {
-      if (err instanceof SyntaxError) {
-        // Fix for https://github.com/spotify/spotify-web-api-ts-sdk/pull/128
-        // Assume api call was successful.
-        settings.playback.setRepeatSong(newRepeatSongState);
-      } else {
-        console.log(err);
-      }
-    }).finally(() => {
-      setIsChangingRepeatSong(false);
-    });
-  }
+      })
+      .catch((err) => {
+        if (err instanceof SyntaxError) {
+          // Fix for https://github.com/spotify/spotify-web-api-ts-sdk/pull/128
+          // Assume api call was successful.
+          settings.playback.setRepeatSong(newRepeatSongState);
+        } else {
+          console.log(err);
+        }
+      })
+      .finally(() => {
+        setIsChangingRepeatSong(false);
+      });
+  };
   // Init setRepeatSong
   useEffect(() => {
     if (!spotify.api) {
@@ -67,13 +69,15 @@ const SpotifyPlaylist: React.FC = () => {
       return;
     }
 
-    spotify.api.player.getPlaybackState().then(state => {
-      settings.playback.setRepeatSong(state?.repeat_state === "track");
-    }).finally(() => {
-      setIsChangingRepeatSong(false);
-    })
+    spotify.api.player
+      .getPlaybackState()
+      .then((state) => {
+        settings.playback.setRepeatSong(state?.repeat_state === "track");
+      })
+      .finally(() => {
+        setIsChangingRepeatSong(false);
+      });
   }, [spotify]);
-
 
   const selectedDevice = spotify.connect.activeDevice?.id ? spotify.connect.activeDevice.id : "";
 

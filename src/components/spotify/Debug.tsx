@@ -63,10 +63,14 @@ export const SpotifyDebug: React.FC = () => {
     }
   };
 
-  const search = async (event: FormEvent) => {
+  const search = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const query = event.target.query.value;
+    const form = event.currentTarget;
+    const formElements = form.elements as typeof form.elements & {
+      query: HTMLInputElement;
+    };
+    const query = formElements.query.value;
 
     console.log("query: ", query);
 
@@ -109,8 +113,8 @@ export const SpotifyDebug: React.FC = () => {
       >
         <option value="" disabled></option>
         {Object.keys(ApiTypes).map((type) => {
-          if (Number.isNaN(parseInt(type))) {
-            return <option value={ApiTypes[type]}>{type}</option>;
+          if (Number.isNaN(parseInt(type)) && typeof type === "string") {
+            return <option value={ApiTypes[type as keyof typeof ApiTypes]}>{type}</option>;
           }
           return null;
         })}

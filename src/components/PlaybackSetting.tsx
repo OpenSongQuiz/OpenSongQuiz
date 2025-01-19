@@ -7,8 +7,12 @@ interface PlaybackSettingProps {
   setPlaybackSetting: (ar0: boolean) => void;
 }
 
-const PlaybackSetting: React.FC<PlaybackSettingProps> = ({ label, isLoading, playbackSettingState, setPlaybackSetting }) => {
-
+const PlaybackSetting: React.FC<PlaybackSettingProps> = ({
+  label,
+  isLoading,
+  playbackSettingState,
+  setPlaybackSetting,
+}) => {
   const togglePlaybackSetting = () => {
     setPlaybackSetting(!playbackSettingState);
   };
