@@ -8,10 +8,10 @@ export interface SettingsContextProps {
   debugSettings: debugSettingsProps;
   setDebugSettings: (settings: debugSettingsProps) => void;
   playback: {
-    repeatSong: boolean | undefined;
-    stopOnReveal: boolean | undefined;
-    setRepeatSong: (arg0: boolean | undefined) => void;
-    setStopOnReveal: (arg0: boolean | undefined) => void;
+    repeatSong: boolean;
+    stopOnReveal: boolean;
+    setRepeatSong: (arg0: boolean) => void;
+    setStopOnReveal: (arg0: boolean) => void;
   };
 }
 
@@ -22,8 +22,8 @@ interface SettingsProviderProps {
 }
 
 export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) => {
-  const [repeatSong, setRepeatSong] = useState<boolean | undefined>(false);
-  const [stopOnReveal, setStopOnReveal] = useState<boolean | undefined>(true);
+  const [repeatSong, setRepeatSong] = useState<boolean>(false);
+  const [stopOnReveal, setStopOnReveal] = useState<boolean>(true);
   const [debugSettings, setDebugSettings] = useState<debugSettingsProps>({enabled: false})
 
   return (
@@ -34,8 +34,8 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         playback: {
           repeatSong: repeatSong,
           stopOnReveal: stopOnReveal,
-          setRepeatSong: (arg0: boolean | undefined) => setRepeatSong(arg0),
-          setStopOnReveal: (arg0: boolean | undefined) => setStopOnReveal(arg0),
+          setRepeatSong: (arg0: boolean) => setRepeatSong(arg0),
+          setStopOnReveal: (arg0: boolean) => setStopOnReveal(arg0),
         },
       }}
     >

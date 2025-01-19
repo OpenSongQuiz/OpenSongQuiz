@@ -13,43 +13,6 @@ const SpotifyPlaylist: React.FC = () => {
   const gameState = useGameState();
   const settings = useSettings();
 
-  useEffect(() => {
-    (async () => {
-      if (!spotify.api) {
-        settings.playback.setRepeatSong(undefined);
-        return;
-      }
-
-      if (settings.playback.repeatSong === undefined) {
-        // On first run, init repeat song value
-        if (spotify?.connect.devices) {
-          const state = await spotify.api.player.getPlaybackState();
-          settings.playback.setRepeatSong(state.repeat_state === "track");
-        } else {
-          console.warn("Could not determine repeat song state");
-          settings.playback.setRepeatSong(false);
-        }
-        return;
-      }
-
-      if (spotify?.connect.activeDevice?.id) {
-        (async () => {
-          try {
-            if (settings.playback.repeatSong) {
-              await spotify?.api?.player.setRepeatMode("track");
-            } else {
-              await spotify?.api?.player.setRepeatMode("off");
-            }
-          } catch (e) {
-            if (!(e instanceof SyntaxError)) {
-              throw e;
-            }
-          }
-        })();
-      }
-    })();
-  }, [spotify, gameState, settings]);
-
   if (!spotify.api) return null;
 
   const ownPlayerKey = "ownPlayer";
@@ -64,6 +27,47 @@ const SpotifyPlaylist: React.FC = () => {
   const onPlaylistChange = (playlistId: string) => {
     gameState.setPlaylistId(playlistId);
   };
+
+  //######
+  //## Repeat song setting
+  //######
+
+  const [isChangingRepeatSong, setIsChangingRepeatSong] = useState<boolean>(false);
+  const setRepeatSong = (newRepeatSongState: boolean) => {
+    if (!spotify?.api) return;
+    const newMode = newRepeatSongState ? "track" : "off";
+
+    setIsChangingRepeatSong(true);
+    spotify?.api?.player.setRepeatMode(newMode).then(
+      () => {
+        settings.playback.setRepeatSong(newRepeatSongState);
+      }
+    ).catch(err => {
+      if (err instanceof SyntaxError) {
+        // Fix for https://github.com/spotify/spotify-web-api-ts-sdk/pull/128
+        // Assume api call was successful.
+        settings.playback.setRepeatSong(newRepeatSongState);
+      } else {
+        console.log(err);
+      }
+    }).finally(() => {
+      setIsChangingRepeatSong(false);
+    });
+  }
+  // Init setRepeatSong
+  useEffect(() => {
+    if (!spotify.api) {
+      setIsChangingRepeatSong(true);
+      return;
+    }
+
+    spotify.api.player.getPlaybackState().then(state => {
+      settings.playback.setRepeatSong(state.repeat_state === "track");
+    }).finally(() => {
+      setIsChangingRepeatSong(false);
+    })
+  }, [spotify]);
+
 
   const selectedDevice = spotify.connect.activeDevice?.id ? spotify.connect.activeDevice.id : "";
 
@@ -100,18 +104,15 @@ const SpotifyPlaylist: React.FC = () => {
         ))}
       </select>
       <PlaybackSetting
-        label={"Stop playback on reveal"}
-        getPlaybackSetting={() => {
-          return settings.playback.stopOnReveal;
-        }}
+        label="Stop playback on reveal"
+        playbackSettingState={settings.playback.stopOnReveal}
         setPlaybackSetting={settings.playback.setStopOnReveal}
       />
       <PlaybackSetting
-        label={"Repeat song"}
-        getPlaybackSetting={() => {
-          return settings.playback.repeatSong;
-        }}
-        setPlaybackSetting={settings.playback.setRepeatSong}
+        label="Repeat song"
+        isLoading={isChangingRepeatSong}
+        playbackSettingState={settings.playback.repeatSong}
+        setPlaybackSetting={setRepeatSong}
       />
       {hasOwnConnectPlayer ? <SpotifyPlayer></SpotifyPlayer> : <></>}
     </>

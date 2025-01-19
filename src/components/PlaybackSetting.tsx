@@ -2,19 +2,15 @@ import React from "react";
 
 interface PlaybackSettingProps {
   label: string;
-  getPlaybackSetting: () => boolean | undefined;
-  setPlaybackSetting: (ar0: boolean | undefined) => void;
+  isLoading?: boolean;
+  playbackSettingState: boolean;
+  setPlaybackSetting: (ar0: boolean) => void;
 }
 
-const PlaybackSetting: React.FC<PlaybackSettingProps> = ({ label, getPlaybackSetting, setPlaybackSetting }) => {
-  const playbackSetting = getPlaybackSetting();
-
-  if (typeof playbackSetting !== "boolean") {
-    return <>Wrong playbackSettingKey</>;
-  }
+const PlaybackSetting: React.FC<PlaybackSettingProps> = ({ label, isLoading, playbackSettingState, setPlaybackSetting }) => {
 
   const togglePlaybackSetting = () => {
-    setPlaybackSetting(!playbackSetting);
+    setPlaybackSetting(!playbackSettingState);
   };
 
   return (
@@ -23,11 +19,11 @@ const PlaybackSetting: React.FC<PlaybackSettingProps> = ({ label, getPlaybackSet
         <input
           className="mx-1"
           type="checkbox"
-          disabled={playbackSetting === undefined}
-          checked={playbackSetting}
+          disabled={isLoading}
+          checked={playbackSettingState}
           onChange={togglePlaybackSetting}
         />
-        {label} {playbackSetting === undefined && "(initialising ...)"}
+        {label} {isLoading && "(loading ...)"}
       </label>
     </>
   );
