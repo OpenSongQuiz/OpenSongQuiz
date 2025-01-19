@@ -7,6 +7,7 @@ import { useSpotify } from "../contexts/Spotify";
 import { useSettings } from "../contexts/Settings";
 import { useQrCodeReader } from "../contexts/QrCodeReader";
 import { GameModes as GameModes, GameStates as GameStates } from "../types/OpenSongQuiz";
+import wrench from "../data/wrench.svg"
 
 const PlayButtonStates = [
   { gameState: GameStates.Start, label: "Start Game", disabled: false },
@@ -18,9 +19,19 @@ const PlayButtonStates = [
 
 const GameModeSelection: React.FC = () => {
   const gameState = useGameState();
+  const settings = useSettings();
+
+  const toggleDebugMode = () => {
+    settings.setDebugSettings({...settings.debugSettings, enabled: !settings.debugSettings.enabled});
+  }
+
+  const bgColor = settings.debugSettings.enabled ? "bg-lime-400" : "bg-slate-500";
 
   return (
     <>
+      <button className={bgColor + " absolute top-1 left-1 bg-slate-500 position-sticky rounded-full p-2"} onClick={toggleDebugMode}>
+        <img src={wrench} width={"24px"}></img>
+      </button>
       <div className="grid">
         <h1 className="text-2xl my-2">Welcome to OpenSongQuiz</h1>
         <button onClick={() => gameState.setGameMode(GameModes.online)}>Play online</button>

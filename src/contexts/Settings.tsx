@@ -1,6 +1,12 @@
 import { createContext, useContext, useState } from "react";
 
+export interface debugSettingsProps {
+    enabled: boolean;
+}
+
 export interface SettingsContextProps {
+  debugSettings: debugSettingsProps;
+  setDebugSettings: (settings: debugSettingsProps) => void;
   playback: {
     repeatSong: boolean | undefined;
     stopOnReveal: boolean | undefined;
@@ -18,10 +24,13 @@ interface SettingsProviderProps {
 export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) => {
   const [repeatSong, setRepeatSong] = useState<boolean | undefined>(false);
   const [stopOnReveal, setStopOnReveal] = useState<boolean | undefined>(true);
+  const [debugSettings, setDebugSettings] = useState<debugSettingsProps>({enabled: false})
 
   return (
     <SettingsContext.Provider
       value={{
+        debugSettings: debugSettings,
+        setDebugSettings,
         playback: {
           repeatSong: repeatSong,
           stopOnReveal: stopOnReveal,
