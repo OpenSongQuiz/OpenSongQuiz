@@ -55,7 +55,7 @@ export const QrCodeReaderProvider: React.FC<QrCodeReaderProviderProps> = ({ chil
     if (videoElement.readyState === 0) {
       const qrCode = await reader.decodeOnceFromVideoDevice("", videoElement);
 
-      console.log(qrCode);
+      console.debug(qrCode);
 
       const fullUrl = qrCode.getText();
       const splitResult = fullUrl.split("/");

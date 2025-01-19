@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from "react";
 
 export interface debugSettingsProps {
-    enabled: boolean;
+  enabled: boolean;
 }
 
 export interface SettingsContextProps {
@@ -24,7 +24,7 @@ interface SettingsProviderProps {
 export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) => {
   const [repeatSong, setRepeatSong] = useState<boolean>(false);
   const [stopOnReveal, setStopOnReveal] = useState<boolean>(true);
-  const [debugSettings, setDebugSettings] = useState<debugSettingsProps>({enabled: false})
+  const [debugSettings, setDebugSettings] = useState<debugSettingsProps>({ enabled: false });
 
   return (
     <SettingsContext.Provider

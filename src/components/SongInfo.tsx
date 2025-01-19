@@ -13,7 +13,7 @@ const SongInfo: React.FC = () => {
   const title = spotify.playback.currentSong?.title;
   const artist = spotify.playback.currentSong?.artist;
   const year = spotify.playback.currentSong?.year;
-  
+
   useEffect(() => {
     if (gameState.gameMode === GameModes.qrCode && gameState.currentState === GameStates.QrCodeScan) {
       reader.decodeOnce();
