@@ -83,7 +83,8 @@ const OpenSongQuiz: React.FC = () => {
       }
     } else if (gameState.currentState === GameStates.SongPlaying) {
       if (settings.playback.stopOnReveal) spotify.playback.pause();
-      gameState.setGameState(GameStates.Revealed);
+      const nextGameState = gameState.gameMode === GameModes.qrCode && !settings.debugSettings.enabled ? GameStates.QrCodeScan : GameStates.Revealed;
+      gameState.setGameState(nextGameState);
     }
   };
 
