@@ -10,7 +10,7 @@ const MyPlayer: React.FC = () => {
     if (!spotify || !playerDevice || playerDevice.status !== "ready") return;
 
     spotify.connect.setNewActiveDevice(playerDevice.device_id);
-  }, [spotify, playerDevice]);
+  }, [playerDevice]);
 
   return <></>;
 };

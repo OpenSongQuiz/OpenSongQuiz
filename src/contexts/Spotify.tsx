@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { SpotifyApi, AuthorizationCodeWithPKCEStrategy, Scopes, Track, Device } from "@spotify/web-api-ts-sdk";
 import { Song } from "../types/OpenSongQuiz";
 
@@ -41,7 +41,8 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
   const [currentSong, setCurrentSong] = useState<Song | undefined>();
   const [intervalId, setIntervalId] = useState<number | undefined>(undefined);
 
-  const refreshDevices = useCallback(async () => {
+
+  const refreshDevices = async () => {
     if (!sdk) return;
 
     const newDevices = await sdk.player.getAvailableDevices();
@@ -53,11 +54,10 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
         (device, index) =>
           device.id === newDevices.devices[index].id && device.is_active === newDevices.devices[index].is_active,
       )
-    )
-      return;
+    ) { return; }
 
     setDevices(newDevices.devices);
-  }, [devices, sdk]);
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -71,21 +71,6 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
     if (!sdk) checkAccessToken();
   });
 
-  // refresh spotify connect devices every 5s
-  useEffect(() => {
-    // do nothing if spotify not ready or we already have created an interval
-    if (!sdk || intervalId !== undefined) return;
-    refreshDevices();
-    setIntervalId(
-      setInterval(() => {
-        refreshDevices();
-      }, 5000),
-    );
-
-    // CleanUp function to clear the interval
-    return () => clearInterval(intervalId);
-  }, [intervalId, refreshDevices, sdk]);
-
   useEffect(() => {
     if (!devices) return;
 
@@ -98,7 +83,16 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
   const setNewActiveDevice = async (deviceId: string) => {
     if (!sdk) return;
 
+    // TODO: state can be null if no connected device is set, so the typehints are misleading.
+
+    const state = await sdk.player.getPlaybackState();
     await sdk.player.transferPlayback([deviceId]);
+    if (state?.is_playing) {
+      await startResume(deviceId);
+    }
+
+    // TODO: Solve without timeout.
+    setTimeout(refreshDevices, 1000);
   };
 
   const checkAccessToken = async () => {
@@ -155,15 +149,18 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
     }
   };
 
-  const startResume = async () => {
-    if (sdk && activeDevice?.id) {
-      try {
-        await sdk.player.startResumePlayback(activeDevice.id);
-      } catch (e) {
-        if (!(e instanceof SyntaxError)) {
-          console.log(typeof e);
-          throw e;
-        }
+  const startResume = async (deviceId?: string) => {
+    if (!sdk) return;
+
+    const id = deviceId ?? activeDevice?.id;
+    if (!id) return;
+
+    try {
+      await sdk.player.startResumePlayback(id);
+    } catch (e) {
+      if (!(e instanceof SyntaxError)) {
+        console.log(typeof e);
+        throw e;
       }
     }
   };

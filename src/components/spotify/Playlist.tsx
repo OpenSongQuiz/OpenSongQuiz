@@ -15,6 +15,12 @@ const SpotifyPlaylist: React.FC = () => {
 
   if (!spotify.api) return null;
 
+  useEffect(() => {
+    if (!spotify.connect.devices) {
+      spotify?.connect.refreshDevices();
+    }
+  }, [spotify]);
+
   const ownPlayerKey = "ownPlayer";
   const onDeviceChange = (deviceId: string) => {
     if (deviceId === ownPlayerKey) {
@@ -62,7 +68,7 @@ const SpotifyPlaylist: React.FC = () => {
     }
 
     spotify.api.player.getPlaybackState().then(state => {
-      settings.playback.setRepeatSong(state.repeat_state === "track");
+      settings.playback.setRepeatSong(state?.repeat_state === "track");
     }).finally(() => {
       setIsChangingRepeatSong(false);
     })
