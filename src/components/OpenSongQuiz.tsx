@@ -29,7 +29,7 @@ const GameModeSelection: React.FC = () => {
 
   return (
     <>
-      <button className={bgColor + " absolute top-1 left-1 bg-slate-500 position-sticky rounded-full p-2"} onClick={toggleDebugMode}>
+      <button className={bgColor + " absolute top-1 left-1 position-sticky rounded-full p-2"} onClick={toggleDebugMode}>
         <img src={wrench} width={"24px"}></img>
       </button>
       <div className="grid">
