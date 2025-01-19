@@ -3,24 +3,16 @@ import { useSpotify } from "../../contexts/Spotify";
 import { useSettings } from "../../contexts/Settings";
 import PlaybackSetting from "./../PlaybackSetting";
 import { useGameState } from "../../contexts/GameState";
-import SpotifyPlayer from "./Player";
+import SpotifyPlayerSelection from "./Player";
 import playlists from "../../data/playlists.json";
 
 const SpotifyPlaylist: React.FC = () => {
-  const [hasOwnConnectPlayer, setHasOwnConnectPlayer] = useState<boolean>(false);
 
   const spotify = useSpotify();
   const gameState = useGameState();
   const settings = useSettings();
 
-  const ownPlayerKey = "ownPlayer";
-  const onDeviceChange = (deviceId: string) => {
-    if (deviceId === ownPlayerKey) {
-      setHasOwnConnectPlayer(true);
-      return;
-    }
-    spotify.connect.setNewActiveDevice(deviceId);
-  };
+  if (!spotify.api) return null;
 
   const onPlaylistChange = (playlistId: string) => {
     gameState.setPlaylistId(playlistId);
@@ -71,29 +63,9 @@ const SpotifyPlaylist: React.FC = () => {
       });
   }, [settings, spotify]);
 
-  const selectedDevice = spotify.connect.activeDevice?.id ? spotify.connect.activeDevice.id : "";
-
-  if (!spotify.api) return null;
-  // TODO: Play on select input should indicate loading while chaning the device
-
   return (
     <>
-      Play on:
-      <select value={selectedDevice} onChange={(e) => onDeviceChange(e.target.value)} className="mx-1 w-64 text-center">
-        {selectedDevice === "" ? <option key="noDevice" value={""} disabled></option> : <></>}
-        {spotify.connect.devices?.map((device) => (
-          <option key={device.id} value={device.id?.toString()}>
-            {device.name}
-          </option>
-        ))}
-        {!hasOwnConnectPlayer ? (
-          <option key={ownPlayerKey} value={ownPlayerKey}>
-            Create new device
-          </option>
-        ) : (
-          <></>
-        )}
-      </select>
+      <SpotifyPlayerSelection></SpotifyPlayerSelection>
       Playlist
       <select
         value={gameState.playlistId}
@@ -117,7 +89,6 @@ const SpotifyPlaylist: React.FC = () => {
         playbackSettingState={settings.playback.repeatSong}
         setPlaybackSetting={setRepeatSong}
       />
-      {hasOwnConnectPlayer ? <SpotifyPlayer></SpotifyPlayer> : <></>}
     </>
   );
 };
