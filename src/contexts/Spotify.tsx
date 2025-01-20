@@ -39,6 +39,7 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
   const [devices, setDevices] = useState<Device[] | undefined>();
   const [activeDevice, setActiveDevice] = useState<Device | undefined>(undefined);
   const [currentSong, setCurrentSong] = useState<Song | undefined>();
+  const [intervalId, setIntervalId] = useState<number | undefined>();
 
   const refreshDevices = useCallback(async () => {
     if (!sdk) return;
