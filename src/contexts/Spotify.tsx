@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { SpotifyApi, AuthorizationCodeWithPKCEStrategy, Scopes, Track, Device } from "@spotify/web-api-ts-sdk";
 import { Song } from "../types/OpenSongQuiz";
 
@@ -40,7 +40,7 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
   const [activeDevice, setActiveDevice] = useState<Device | undefined>(undefined);
   const [currentSong, setCurrentSong] = useState<Song | undefined>();
 
-  const refreshDevices = async () => {
+  const refreshDevices = useCallback(async () => {
     if (!sdk) return;
 
     const newDevices = await sdk.player.getAvailableDevices();
@@ -57,7 +57,21 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
     }
 
     setDevices(newDevices.devices);
-  };
+  }, [devices, sdk]);
+
+  // refresh spotify connect devices every 5s
+  useEffect(() => {
+    // do nothing if spotify not ready or we already have created an interval
+    if (!sdk || intervalId !== undefined) return;
+    refreshDevices();
+    setIntervalId(
+      setInterval(() => {
+        refreshDevices();
+      }, 5000),
+    );
+    // CleanUp function to clear the interval
+    return () => clearInterval(intervalId);
+  }, [intervalId, refreshDevices, sdk]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

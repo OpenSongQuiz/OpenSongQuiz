@@ -13,14 +13,6 @@ const SpotifyPlaylist: React.FC = () => {
   const gameState = useGameState();
   const settings = useSettings();
 
-  if (!spotify.api) return null;
-
-  useEffect(() => {
-    if (!spotify.connect.devices) {
-      spotify?.connect.refreshDevices();
-    }
-  }, [spotify]);
-
   const ownPlayerKey = "ownPlayer";
   const onDeviceChange = (deviceId: string) => {
     if (deviceId === ownPlayerKey) {
@@ -77,10 +69,11 @@ const SpotifyPlaylist: React.FC = () => {
       .finally(() => {
         setIsChangingRepeatSong(false);
       });
-  }, [spotify]);
+  }, [settings, spotify]);
 
   const selectedDevice = spotify.connect.activeDevice?.id ? spotify.connect.activeDevice.id : "";
 
+  if (!spotify.api) return null;
   // TODO: Play on select input should indicate loading while chaning the device
 
   return (
