@@ -3,7 +3,7 @@
  * https://jestjs.io/docs/configuration
  */
 
-import type {Config} from 'jest';
+import type { Config } from "jest";
 
 const config: Config = {
   // All imported modules in your tests should be mocked automatically
@@ -78,13 +78,7 @@ const config: Config = {
   // ],
 
   // An array of file extensions your modules use
-  "moduleFileExtensions": [
-    "ts",
-    "js",
-    "json",
-    "node",
-    "tsx"
-  ],
+  moduleFileExtensions: ["ts", "js", "json", "node", "tsx"],
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   // moduleNameMapper: {},
@@ -123,9 +117,7 @@ const config: Config = {
   // rootDir: undefined,
 
   // A list of paths to directories that Jest should use to search for files in
-  roots: [
-    "<rootDir>/src/"
-  ],
+  roots: ["<rootDir>/src/"],
 
   // Allows you to use a custom runner instead of Jest's default test runner
   // runner: "jest-runner",
@@ -143,7 +135,7 @@ const config: Config = {
   // snapshotSerializers: [],
 
   // The test environment that will be used for testing
-  testEnvironment: 'jsdom',
+  testEnvironment: "jsdom",
 
   // Options that will be passed to the testEnvironment
   // testEnvironmentOptions: {},
@@ -172,9 +164,9 @@ const config: Config = {
   // testRunner: "jest-circus/runner",
 
   // A map from regular expressions to paths to transformers
-  "transform": {
-    "^.+\\.ts$": ["ts-jest", {"tsconfig": "tsconfig.jest.json"}],
-    "^.+\\.tsx$": ["ts-jest", {"tsconfig": "tsconfig.jest.json"}]
+  transform: {
+    "^.+\\.ts$": ["ts-jest", { tsconfig: "tsconfig.jest.json" }],
+    "^.+\\.tsx$": ["ts-jest", { tsconfig: "tsconfig.jest.json" }],
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
