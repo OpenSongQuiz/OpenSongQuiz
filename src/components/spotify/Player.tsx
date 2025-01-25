@@ -76,7 +76,7 @@ const SpotifyPlayerSelection: React.FC = () => {
         ))}
         {!hasOwnConnectPlayer ? (
           <option key={ownPlayerKey} value={ownPlayerKey}>
-            Create new device
+            Play music in browser
           </option>
         ) : (
           <></>
