@@ -12,8 +12,6 @@ const SpotifyPlaylist: React.FC = () => {
   const gameState = useGameState();
   const settings = useSettings();
 
-  if (!spotify.api) return null;
-
   const onPlaylistChange = (playlistId: string) => {
     gameState.setPlaylistId(playlistId);
   };
@@ -62,6 +60,8 @@ const SpotifyPlaylist: React.FC = () => {
         setIsChangingRepeatSong(false);
       });
   }, [settings, spotify]);
+
+  if (!spotify.api) return null;
 
   return (
     <>

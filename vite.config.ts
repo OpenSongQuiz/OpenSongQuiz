@@ -9,7 +9,7 @@ export default defineConfig(configEnv => {
       exclude: ["js-big-decimal"],
     },
     build: {
-      sourcemap: configEnv.mode === 'development',
+      sourcemap: configEnv.mode === 'development'
     }
   }
 });

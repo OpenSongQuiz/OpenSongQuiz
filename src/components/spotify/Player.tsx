@@ -10,7 +10,7 @@ const MyPlayer: React.FC = () => {
     if (!playerDevice || playerDevice.status !== "ready") return;
 
     spotify.connect.setNewActiveDevice(playerDevice.device_id);
-  }, [playerDevice]);
+  }, [playerDevice, spotify.connect]);
 
   return <></>;
 };
@@ -43,13 +43,13 @@ const SpotifyPlayerSelection: React.FC = () => {
 
   const spotify = useSpotify();
 
-  if (!spotify.api) return null;
-
   useEffect(() => {
     if (!spotify.connect.devices) {
       spotify?.connect.refreshDevices();
     }
   }, [spotify]);
+
+  if (!spotify.api) return null;
 
   const ownPlayerKey = "ownPlayer";
   const onDeviceChange = (deviceId: string) => {
