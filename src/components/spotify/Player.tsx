@@ -10,7 +10,10 @@ const MyPlayer: React.FC = () => {
     if (!playerDevice || playerDevice.status !== "ready") return;
 
     spotify.connect.setNewActiveDevice(playerDevice.device_id);
-  }, [playerDevice, spotify.connect]);
+
+    // TODO: adding spotify.connect as dependency breaks the application because setNewActiveDevice refresehes spotify.connect
+    // Try to separate the spotify.connect actions from state(?)
+  }, [playerDevice]);
 
   return <></>;
 };

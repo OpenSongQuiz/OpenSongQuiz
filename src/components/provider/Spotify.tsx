@@ -20,7 +20,7 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
   const [isChangingDevice, setIsChangingDevice] = useState<boolean>(false);
 
   const refreshDevices = useCallback(async () => {
-    if (!sdk) return;
+    if (!sdk || isChangingDevice) return;
 
     const newDevices = await sdk.player.getAvailableDevices();
 
@@ -36,7 +36,7 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
     }
 
     setDevices(newDevices.devices);
-  }, [devices, sdk]);
+  }, [devices, sdk, isChangingDevice]);
 
   // refresh spotify connect devices every 5s
   useEffect(() => {
