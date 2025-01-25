@@ -62,27 +62,33 @@ const SpotifyPlayerSelection: React.FC = () => {
 
   const selectedDevice = spotify.connect.activeDevice?.id ? spotify.connect.activeDevice.id : "";
 
-  // TODO: Play on select input should indicate loading while chaning the device
-
   return (
     <>
       Play on:
-      <select value={selectedDevice} onChange={(e) => onDeviceChange(e.target.value)} className="mx-1 w-64 text-center">
-        {selectedDevice === "" ? <option key="noDevice" value={""} disabled></option> : <></>}
-        {spotify.connect.devices?.map((device) => (
-          <option key={device.id} value={device.id?.toString()}>
-            {device.name}
-          </option>
-        ))}
-        {!hasOwnConnectPlayer ? (
-          <option key={ownPlayerKey} value={ownPlayerKey}>
-            Play music in browser
-          </option>
-        ) : (
-          <></>
-        )}
-      </select>
-      {hasOwnConnectPlayer ? <SpotifyPlayer></SpotifyPlayer> : <></>}
+      <select disabled={spotify.connect.isChangingDevice} value={selectedDevice} onChange={(e) => onDeviceChange(e.target.value)} className="mx-1 w-64 text-center">
+        {spotify.connect.isChangingDevice
+          ?
+          <option key={selectedDevice} value={selectedDevice} disabled>Loading...</option>
+          :
+          <>
+            {selectedDevice === "" ? <option key="noDevice" value={""} disabled></option> : <></>}
+            {spotify.connect.devices?.map((device) => (
+              <option key={device.id} value={device.id?.toString()}>
+                {device.name}
+              </option>
+            ))}
+            {!hasOwnConnectPlayer ? (
+              <option key={ownPlayerKey} value={ownPlayerKey}>
+                Play music in browser
+              </option>
+            ) : (
+              <></>
+            )}
+          </>}
+
+      </select >
+      {hasOwnConnectPlayer ? <SpotifyPlayer></SpotifyPlayer> : <></>
+      }
     </>
   );
 };

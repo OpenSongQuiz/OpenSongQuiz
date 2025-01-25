@@ -9,6 +9,7 @@ interface SpotifyContextProps {
     activeDevice: Device | undefined;
     refreshDevices: () => void;
     setNewActiveDevice: (deviceId: string) => void;
+    isChangingDevice: boolean;
   };
   playback: {
     currentSong: Song | undefined;

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { SpotifyApi, AuthorizationCodeWithPKCEStrategy, Scopes, Track, Device } from "@spotify/web-api-ts-sdk";
+import { SpotifyApi, AuthorizationCodeWithPKCEStrategy, Scopes, Track, Device, Devices } from "@spotify/web-api-ts-sdk";
 import { Song } from "../../types/OpenSongQuiz";
 import { SpotifyContext } from "../../contexts/Spotify";
 
@@ -17,6 +17,7 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
   const [devices, setDevices] = useState<Device[] | undefined>();
   const [activeDevice, setActiveDevice] = useState<Device | undefined>(undefined);
   const [currentSong, setCurrentSong] = useState<Song | undefined>();
+  const [isChangingDevice, setIsChangingDevice] = useState<boolean>(false);
 
   const refreshDevices = useCallback(async () => {
     if (!sdk) return;
@@ -68,17 +69,49 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
 
   const setNewActiveDevice = async (deviceId: string) => {
     if (!sdk) return;
+    setIsChangingDevice(true);
 
-    // TODO: state can be null if no connected device is set, so the typehints are misleading.
+    function checkDeviceReady(newDevices: Devices, expectedDeviceId: string) {
+      const newActiveDevice = newDevices.devices.filter((device) => device.is_active);
+      if (newActiveDevice.length !== 1) return false;
 
-    const state = await sdk.player.getPlaybackState();
-    await sdk.player.transferPlayback([deviceId]);
-    if (state?.is_playing) {
-      await startResume(deviceId);
+      return newActiveDevice[0].id === expectedDeviceId
+    }
+    async function setPlayState() {
+      if (!sdk) return false;
+      try {
+        const state = await sdk.player.getPlaybackState();
+        if (!state) return false;
+        if (!state.is_playing) { await startResume(deviceId); }
+        return true;
+      } catch (error) {
+        console.error("Error while setting new active device", error);
+      }
+      return false;
     }
 
-    // TODO: Solve without timeout.
-    setTimeout(refreshDevices, 1000);
+    try {
+      // TODO: state can be null if no connected device is set, so the typehints are misleading.
+
+      const state = await sdk.player.getPlaybackState();
+      await sdk.player.transferPlayback([deviceId]);
+
+      let newDevices = await sdk.player.getAvailableDevices();
+
+      while (!checkDeviceReady(newDevices, deviceId)) {
+        await new Promise(r => setTimeout(r, 100));
+        newDevices = await sdk.player.getAvailableDevices();
+      }
+
+      if (state?.is_playing) {
+        while (!setPlayState()) {
+          await new Promise(r => setTimeout(r, 100));
+        }
+      }
+      setDevices(newDevices.devices);
+    } finally {
+      setIsChangingDevice(false);
+    }
   };
 
   const checkAccessToken = async () => {
@@ -242,6 +275,7 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
           activeDevice,
           refreshDevices,
           setNewActiveDevice,
+          isChangingDevice,
         },
         playback: {
           currentSong,
