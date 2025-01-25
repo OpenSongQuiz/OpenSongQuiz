@@ -1,6 +1,4 @@
-import { createContext, SetStateAction, useContext, useState } from "react";
-import playlists from "../data/playlists.json";
-import { GameStates } from "../types/OpenSongQuiz";
+import { createContext, SetStateAction, useContext } from "react";
 
 interface GameStateContextProps {
   currentState: number;
@@ -13,39 +11,7 @@ interface GameStateContextProps {
   setSongId: (songId: string) => void;
 }
 
-const GameStateContext = createContext<GameStateContextProps | undefined>(undefined);
-
-interface GameStateProviderProps {
-  children?: React.ReactNode;
-}
-
-export const GameStateProvider: React.FC<GameStateProviderProps> = ({ children }) => {
-  const [currentState, setCurrentState] = useState(GameStates.Start);
-  const [gameMode, setGameMode] = useState<number | undefined>(undefined);
-  const [playlistId, setPlaylistId] = useState<string>(playlists.playlists[0].spotifyId);
-  const [songId, setSongId] = useState<string>("");
-
-  return (
-    <GameStateContext.Provider
-      value={{
-        currentState,
-        playlistId,
-        songId,
-        gameMode,
-        setGameState: (state) => {
-          setCurrentState(state);
-        },
-        setGameMode: (mode) => {
-          setGameMode(mode);
-        },
-        setPlaylistId: setPlaylistId,
-        setSongId: setSongId,
-      }}
-    >
-      {children}
-    </GameStateContext.Provider>
-  );
-};
+export const GameStateContext = createContext<GameStateContextProps | undefined>(undefined);
 
 export const useGameState = () => {
   const context = useContext(GameStateContext);

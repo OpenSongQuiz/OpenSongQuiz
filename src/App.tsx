@@ -1,9 +1,9 @@
 import "./App.css";
-import { SpotifyProvider } from "./contexts/Spotify";
-import { SettingsProvider } from "./contexts/Settings";
-import { GameStateProvider } from "./contexts/GameState";
+import { SpotifyProvider } from "./components/provider/Spotify";
+import { SettingsProvider } from "./components/provider/Settings";
+import { GameStateProvider } from "./components/provider/GameState";
 import OpenSongQuiz from "./components/OpenSongQuiz";
-import { QrCodeReaderProvider } from "./contexts/QrCodeReader";
+import { QrCodeReaderProvider } from "./components/provider/QrCodeReader";
 import { useEffect, useState } from "react";
 
 function App() {
