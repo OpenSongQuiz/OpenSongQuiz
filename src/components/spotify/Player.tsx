@@ -5,9 +5,10 @@ import React, { useEffect, useState } from "react";
 
 interface MyPlayerProps {
   setIsLoading: (ar0: boolean) => void;
+  setLoadingError: () => void;
 }
 
-const MyPlayer: React.FC<MyPlayerProps> = ({ setIsLoading }) => {
+const MyPlayer: React.FC<MyPlayerProps> = ({ setIsLoading, setLoadingError }) => {
   const spotify = useSpotify();
   const playerDevice = usePlayerDevice();
 
@@ -21,15 +22,23 @@ const MyPlayer: React.FC<MyPlayerProps> = ({ setIsLoading }) => {
     // Try to separate the spotify.connect actions from state(?)
   }, [playerDevice, setIsLoading]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (playerDevice?.status !== "ready") setLoadingError();
+    }, 15000);
+    return () => clearTimeout(timer);
+  }, [playerDevice]);
+
   return <></>;
 };
 
 
 interface SpotifyPlayerProps {
   setIsLoading: (ar0: boolean) => void;
+  setLoadingError: () => void;
 }
 
-const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ setIsLoading }) => {
+const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ setIsLoading, setLoadingError }) => {
   const spotify = useSpotify();
 
   if (!spotify?.api?.getAccessToken()) {
@@ -46,7 +55,7 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ setIsLoading }) => {
   return (
     <WebPlaybackSDK initialDeviceName="OpenSongQuiz" getOAuthToken={tokenProvider} initialVolume={0.5}>
       <div className="w-5/6 justify-center">
-        <MyPlayer setIsLoading={setIsLoading} />
+        <MyPlayer setIsLoading={setIsLoading} setLoadingError={setLoadingError} />
       </div>
     </WebPlaybackSDK>
   );
@@ -73,6 +82,13 @@ const SpotifyPlayerSelection: React.FC = () => {
       return;
     }
     spotify.connect.setNewActiveDevice(deviceId);
+  };
+
+  const handleErrorInPlayerLoading = () => {
+    setHasOwnConnectPlayer(false);
+    setOwnConnectPlayerIsLoading(false);
+    // TODO: Proper display of error to user
+    console.error("Could not load Player SDK");
   };
 
   const selectedDevice = spotify.connect.activeDevice?.id ? spotify.connect.activeDevice.id : "";
@@ -104,7 +120,7 @@ const SpotifyPlayerSelection: React.FC = () => {
           </>}
 
       </select >
-      {hasOwnConnectPlayer ? <SpotifyPlayer setIsLoading={setOwnConnectPlayerIsLoading}></SpotifyPlayer> : <></>
+      {hasOwnConnectPlayer ? <SpotifyPlayer setIsLoading={setOwnConnectPlayerIsLoading} setLoadingError={handleErrorInPlayerLoading}></SpotifyPlayer> : <></>
       }
     </>
   );
