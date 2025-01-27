@@ -23,20 +23,8 @@ export const SpotifyProvider: React.FC<SpotifyProviderProps> = ({ children }) =>
     if (!sdk || isChangingDevice) return;
 
     const newDevices = await sdk.player.getAvailableDevices();
-
-    // Manually check if device list changed, because otherwise react is constantly polling new devices.
-    if (
-      devices?.length === newDevices.devices.length &&
-      devices.every(
-        (device, index) =>
-          device.id === newDevices.devices[index].id && device.is_active === newDevices.devices[index].is_active,
-      )
-    ) {
-      return;
-    }
-
     setDevices(newDevices.devices);
-  }, [devices, sdk, isChangingDevice]);
+  }, [sdk, isChangingDevice]);
 
   // refresh spotify connect devices every 5s
   useEffect(() => {
