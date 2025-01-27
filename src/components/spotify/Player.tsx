@@ -2,23 +2,34 @@ import { WebPlaybackSDK, usePlayerDevice } from "react-spotify-web-playback-sdk"
 import { useSpotify } from "../../contexts/Spotify";
 import React, { useEffect, useState } from "react";
 
-const MyPlayer: React.FC = () => {
+
+interface MyPlayerProps {
+  setIsLoading: (ar0: boolean) => void;
+}
+
+const MyPlayer: React.FC<MyPlayerProps> = ({ setIsLoading }) => {
   const spotify = useSpotify();
   const playerDevice = usePlayerDevice();
 
   useEffect(() => {
+    setIsLoading(playerDevice?.status !== "ready");
     if (!playerDevice || playerDevice.status !== "ready") return;
 
     spotify.connect.setNewActiveDevice(playerDevice.device_id);
 
     // TODO: adding spotify.connect as dependency breaks the application because setNewActiveDevice refresehes spotify.connect
     // Try to separate the spotify.connect actions from state(?)
-  }, [playerDevice]);
+  }, [playerDevice, setIsLoading]);
 
   return <></>;
 };
 
-const SpotifyPlayer: React.FC = () => {
+
+interface SpotifyPlayerProps {
+  setIsLoading: (ar0: boolean) => void;
+}
+
+const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ setIsLoading }) => {
   const spotify = useSpotify();
 
   if (!spotify?.api?.getAccessToken()) {
@@ -35,7 +46,7 @@ const SpotifyPlayer: React.FC = () => {
   return (
     <WebPlaybackSDK initialDeviceName="OpenSongQuiz" getOAuthToken={tokenProvider} initialVolume={0.5}>
       <div className="w-5/6 justify-center">
-        <MyPlayer />
+        <MyPlayer setIsLoading={setIsLoading} />
       </div>
     </WebPlaybackSDK>
   );
@@ -43,6 +54,7 @@ const SpotifyPlayer: React.FC = () => {
 
 const SpotifyPlayerSelection: React.FC = () => {
   const [hasOwnConnectPlayer, setHasOwnConnectPlayer] = useState<boolean>(false);
+  const [ownConnectPlayerIsLoading, setOwnConnectPlayerIsLoading] = useState<boolean>(false);
 
   const spotify = useSpotify();
 
@@ -65,11 +77,13 @@ const SpotifyPlayerSelection: React.FC = () => {
 
   const selectedDevice = spotify.connect.activeDevice?.id ? spotify.connect.activeDevice.id : "";
 
+  const showLoading = spotify.connect.isChangingDevice || ownConnectPlayerIsLoading
+
   return (
     <>
       Play on:
-      <select disabled={spotify.connect.isChangingDevice} value={selectedDevice} onChange={(e) => onDeviceChange(e.target.value)} className="mx-1 w-64 text-center">
-        {spotify.connect.isChangingDevice
+      <select disabled={showLoading} value={selectedDevice} onChange={(e) => onDeviceChange(e.target.value)} className="mx-1 w-64 text-center">
+        {showLoading
           ?
           <option key={selectedDevice} value={selectedDevice} disabled>Loading...</option>
           :
@@ -90,7 +104,7 @@ const SpotifyPlayerSelection: React.FC = () => {
           </>}
 
       </select >
-      {hasOwnConnectPlayer ? <SpotifyPlayer></SpotifyPlayer> : <></>
+      {hasOwnConnectPlayer ? <SpotifyPlayer setIsLoading={setOwnConnectPlayerIsLoading}></SpotifyPlayer> : <></>
       }
     </>
   );
